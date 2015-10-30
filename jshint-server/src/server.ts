@@ -240,7 +240,7 @@ class Linter {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false });
 			}
 			this.lib = value;
-			let result: InitializeResult = { capabilities: { }};
+			let result: InitializeResult = { capabilities: { textDocumentSync: this.documents.syncKind }};
 			return result;
 		}, (error) => {
 			return Promise.reject(
@@ -259,7 +259,7 @@ class Linter {
 				tracker.add(this.getMessage(err, document));
 			}
 		});
-		tracker.publish(this.connection);
+		tracker.sendErrors(this.connection);
 	}
 
 	private validateSingle(document: ITextDocument): void {
@@ -290,7 +290,7 @@ class Linter {
 				}
 			});
 		}
-		this.connection.publishDiagnostics({ uri: document.uri, diagnostics });
+		this.connection.sendDiagnostics({ uri: document.uri, diagnostics });
 	}
 
 	private getMessage(err: any, document: ITextDocument): string {
