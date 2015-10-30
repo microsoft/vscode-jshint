@@ -13,7 +13,7 @@ export function activate() {
 			run: { module },
 			debug: { module, options: debugOptions}
 		},
-		syncTextDocument: (textDocument) => (textDocument.getLanguageId() === 'javascript' || textDocument.getLanguageId() === 'javascriptreact'),
+		languageSelector: ['javascript', 'javascriptreact'],
 		configuration: 'jshint',
 		fileWatchers: workspace.createFileSystemWatcher('**/.jshintrc')
 	}
