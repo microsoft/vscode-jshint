@@ -13,7 +13,7 @@ export function activate(subscriptions: Disposable[]) {
 		debug: { module: serverModule, options: debugOptions}
 	};
 	let clientOptions: LanguageClientOptions = {
-		languageSelector: ['javascript', 'javascriptreact'],
+		documentSelector: ['javascript', 'javascriptreact'],
 		synchronize: {
 			configurationSection: 'jshint',
 			fileEvents: workspace.createFileSystemWatcher('**/.jshintrc')
