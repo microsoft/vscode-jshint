@@ -1,5 +1,6 @@
 {
 	"name": "jshint-server",
+	"description": "The server part of the VSCode jshint extension",
 	"version": "0.10.0",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
