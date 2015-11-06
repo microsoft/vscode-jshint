@@ -7,7 +7,7 @@ import {
 	ResponseError, RequestType, IRequestHandler, NotificationType, INotificationHandler,
 	InitializeParams, InitializeResult, InitializeError,
 	DidChangeConfigurationParams, DidChangeWatchedFilesParams,
-	Diagnostic, Severity, Position, Files,
+	Diagnostic, DiagnosticSeverity, Position, Files,
 	TextDocuments, ITextDocument,
 	ErrorMessageTracker
 } from 'vscode-languageserver';
@@ -64,18 +64,18 @@ function makeDiagnostic(problem: JSHintError): Diagnostic {
 		message: problem.reason,
 		severity: getSeverity(problem),
 		code: problem.code,
-		start: {
-			line: problem.line - 1,
-			character: problem.character - 1
+		range: {
+			start: { line: problem.line - 1, character: problem.character - 1 },
+			end: { line: problem.line - 1, character: problem.character - 1 }
 		}
 	};
 }
 
 function getSeverity(problem: JSHintError): number {
 	if (problem.id === '(error)') {
-		return Severity.Error;
+		return DiagnosticSeverity.Error;
 	}
-	return Severity.Warning;
+	return DiagnosticSeverity.Warning;
 }
 
 const JSHINTRC = '.jshintrc';
@@ -234,7 +234,7 @@ class Linter {
 	}
 
 	private onInitialize(params: InitializeParams): Thenable<InitializeResult | ResponseError<InitializeError>> {
-		this.workspaceRoot = params.rootFolder;
+		this.workspaceRoot = params.rootPath;
 		return Files.resolveModule(this.workspaceRoot, 'jshint').then((value) => {
 			if (!value.JSHINT) {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false });

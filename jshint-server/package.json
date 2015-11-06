@@ -1,13 +1,20 @@
 {
 	"name": "jshint-server",
-	"version": "0.1.0",
-	"description": "JSHint Linter Server",
+	"version": "0.10.0",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-jshint.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Microsoft/vscode-jshint/issues"
+	},
 	"engines": {
 		"node": "*"
 	},
-	"private": true,
 	"dependencies": {
-		"vscode-languageserver": "next"
+		"vscode-languageserver": "0.10.0"
 	},
 	"devDependencies": {
 		"typescript": "^1.6.2"
