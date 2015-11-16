@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
 	"description": "Extension to lint JavaScript files using jshint.",
-	"version": "0.10.0",
+	"version": "0.10.2",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
@@ -11,13 +11,16 @@
 	"bugs": {
 		"url": "https://github.com/Microsoft/vscode-jshint/issues"
 	},
+	"icon": "jshint_icon.png",
+	"galleryBanner": {
+		"color": "#2e2e2d"
+	},
 	"categories": [
-		"Languages",
 		"Linters"
 	],
 	"publisher": "dbaeumer",
 	"engines": {
-		"vscode": "0.10.x"
+		"vscode": "^0.10.1"
 	},
 	"activationEvents": [
 		"onLanguage:javascript", "onLanguage:javascriptreact"
@@ -42,11 +45,13 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "cd ../jshint-server && npm run compile && cd ../jshint && node ./node_modules/vscode/bin/compile",
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+		"vscode:prepublish": "cd ../jshint-server && npm run compile && cd ../jshint && tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"compile": "tsc -p ./"
 	},
 	"devDependencies": {
-		"vscode": "0.10.x"
+		"vscode": "0.10.x",
+		"typescript": "^1.6.2"
 	},
 	"dependencies": {
 		"vscode-languageclient": "0.10.x"
