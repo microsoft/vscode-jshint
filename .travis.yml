@@ -8,4 +8,4 @@ install:
   - cd jshint-server && npm install && cd ../jshint && npm install && cd ..
   
 script:
-  - cd jshint-server && npm run compile && cd .. && npm run compile
+  - cd jshint-server && npm run compile && cd ../jshint && npm run compile && cd ..
