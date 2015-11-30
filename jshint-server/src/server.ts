@@ -246,7 +246,7 @@ class Linter {
 		}, (error) => {
 			return Promise.reject(
 				new ResponseError<InitializeError>(99,
-					'Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' and then press Retry.',
+					'Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' or globally using \'npm install -g jshint\' and then press Retry.',
 					{ retry: true }));
 		});
 	}

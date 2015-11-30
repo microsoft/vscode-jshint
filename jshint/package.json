@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
-	"description": "Extension to lint JavaScript files using jshint.",
-	"version": "0.10.3",
+	"description": "Integrates JSHint into VS Code.",
+	"version": "0.10.4",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
