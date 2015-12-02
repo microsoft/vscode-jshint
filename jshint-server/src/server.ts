@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
- 
+
 import {
 	createConnection, IConnection,
 	ResponseError, RequestType, IRequestHandler, NotificationType, INotificationHandler,
@@ -10,7 +10,7 @@ import {
 	DidChangeConfigurationParams, DidChangeWatchedFilesParams,
 	Diagnostic, DiagnosticSeverity, Position, Files,
 	TextDocuments, ITextDocument,
-	ErrorMessageTracker
+	ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
 } from 'vscode-languageserver';
 
 import fs = require('fs');
@@ -212,7 +212,7 @@ class Linter {
 	private lib: any;
 
 	constructor() {
-		this.connection = createConnection(process.stdin, process.stdout);
+		this.connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 		this.options = new OptionsResolver(this.connection);
 		this.documents = new TextDocuments();
 		this.documents.onDidChangeContent(event => this.validateSingle(event.document));
