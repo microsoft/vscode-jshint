@@ -43,7 +43,13 @@
 					"description": "The jshint options object to provide args to the jshint command."
 				}
 			}
-		}
+		},
+		"jsonValidation": [
+			{
+				"fileMatch": ".jshintrc",
+				"url": "http://json.schemastore.org/jshintrc"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "cd ../jshint-server && npm run compile && cd ../jshint && tsc -p ./",
