@@ -46,6 +46,10 @@
 		},
 		"jsonValidation": [
 			{
+				"fileMatch": "jshint.json",
+				"url": "http://json.schemastore.org/grunt-jshint-task"
+			},
+			{
 				"fileMatch": ".jshintrc",
 				"url": "http://json.schemastore.org/jshintrc"
 			}
