@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
 	"description": "Integrates JSHint into VS Code.",
-	"version": "0.10.5",
+	"version": "0.10.6",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
