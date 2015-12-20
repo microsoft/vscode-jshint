@@ -62,7 +62,9 @@ interface JSHINT {
 
 function makeDiagnostic(problem: JSHintError): Diagnostic {
 	return {
-		message: problem.reason,
+		//also report the code at the end of the message, makes it easier to turn on/off
+		//if the user wants to ignore it
+		message: problem.reason+(problem.code?" ("+problem.code+")":""),
 		severity: getSeverity(problem),
 		code: problem.code,
 		range: {
@@ -73,7 +75,12 @@ function makeDiagnostic(problem: JSHintError): Diagnostic {
 }
 
 function getSeverity(problem: JSHintError): number {
-	if (problem.id === '(error)') {
+	//this isn't right: JSHint always reports the id as an error.
+	//we need to look at the first letter of the code for that
+	//if there is no code (that would be very odd) we'll push it as an error as well.
+	//See http://jshint.com/docs/ (search for error. It is only mentioned once.)
+	//if (problem.id === '(error)') {
+	if (!problem.code || problem.code[0] === 'E') {
 		return DiagnosticSeverity.Error;
 	}
 	return DiagnosticSeverity.Warning;
