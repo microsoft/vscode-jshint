@@ -61,6 +61,10 @@ interface JSHINT {
 }
 
 function makeDiagnostic(problem: JSHintError): Diagnostic {
+	//setting errors (and potentially global file errors) will report on line zero, char zero.
+	//ensure that the start and end are >=0 (gets dropped by one in the return)
+	if (problem.line<=0 ) problem.line = 1;
+	if (problem.character<=0 ) problem.character = 1;
 	return {
 		//also report the code at the end of the message, makes it easier to turn on/off
 		//if the user wants to ignore it
