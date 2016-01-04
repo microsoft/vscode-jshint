@@ -61,8 +61,16 @@ interface JSHINT {
 }
 
 function makeDiagnostic(problem: JSHintError): Diagnostic {
+	// Setting errors (and potentially global file errors) will report on line zero, char zero.
+	// Ensure that the start and end are >=0 (gets dropped by one in the return)
+	if (problem.line <= 0) {
+		problem.line = 1;
+	}
+	if (problem.character <= 0) {
+		problem.character = 1;
+	}
 	return {
-		message: problem.reason,
+		message: problem.reason + (problem.code ? ` (${problem.code})` : ''),
 		severity: getSeverity(problem),
 		code: problem.code,
 		range: {
@@ -73,7 +81,9 @@ function makeDiagnostic(problem: JSHintError): Diagnostic {
 }
 
 function getSeverity(problem: JSHintError): number {
-	if (problem.id === '(error)') {
+	// If there is no code (that would be very odd) we'll push it as an error as well.
+	// See http://jshint.com/docs/ (search for error. It is only mentioned once.)
+	if (!problem.code || problem.code[0] === 'E') {
 		return DiagnosticSeverity.Error;
 	}
 	return DiagnosticSeverity.Warning;
