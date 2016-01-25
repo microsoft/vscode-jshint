@@ -72,6 +72,7 @@ function makeDiagnostic(problem: JSHintError): Diagnostic {
 	return {
 		message: problem.reason + (problem.code ? ` (${problem.code})` : ''),
 		severity: getSeverity(problem),
+		source: 'jshint',
 		code: problem.code,
 		range: {
 			start: { line: problem.line - 1, character: problem.character - 1 },
