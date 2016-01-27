@@ -137,9 +137,9 @@ class OptionsResolver {
 
 		function stripComments(content: string): string {
 			/**
-			* First capturing group mathes double quoted string
-			* Second matches singler quotes string
-			* Thrid matches block comments
+			* First capturing group matches double quoted string
+			* Second matches single quotes string
+			* Third matches block comments
 			* Fourth matches line comments
 			*/
 			var regexp: RegExp = /("(?:[^\\\"]*(?:\\.)?)*")|('(?:[^\\\']*(?:\\.)?)*')|(\/\*(?:\r?\n|.)*?\*\/)|(\/{2,}.*?(?:(?:\r?\n)|$))/g;
