@@ -16,16 +16,27 @@ import {
 import fs = require('fs');
 import path = require('path');
 
+import * as minimatch from 'minimatch';
+import * as _ from 'lodash';
+
 interface JSHintOptions {
 	config?: string;
 	[key: string]: any;
 }
 
+interface FileSettings {
+	[pattern: string]: boolean
+}
+
+interface JSHintSettings {
+	enable: boolean;
+	options: JSHintOptions;
+	include: FileSettings;
+	exclude: FileSettings;
+}
+
 interface Settings {
-	jshint: {
-		enable: boolean;
-		options: JSHintOptions;
-	}
+	jshint: JSHintSettings,
 	[key: string]: any;
 }
 
@@ -213,10 +224,37 @@ class OptionsResolver {
 	}
 }
 
-class Linter {
+class FileMatcher {
+	private include: string[];
+	private exclude: string[];
 
+	constructor() {
+		this.include = null;
+		this.exclude = null;
+	}
+
+	set(include: FileSettings, exclude: FileSettings): void {
+		function pickTrueKeys(obj: FileSettings) {
+			return _.keys(_.pick(obj, Boolean));
+		}
+
+		this.include = pickTrueKeys(include);
+		this.exclude = pickTrueKeys(exclude);
+	}
+
+	match(path: string): boolean {
+		return _.some(this.include, (pattern) => {
+			return minimatch(path, pattern);
+		}) && _.every(this.exclude, (pattern) => {
+			return !minimatch(path, pattern);
+		});
+	}
+}
+
+class Linter {
 	private connection: IConnection;
 	private options: OptionsResolver;
+	private fileMatcher: FileMatcher;
 	private documents: TextDocuments;
 
 	private workspaceRoot: string;
@@ -225,14 +263,23 @@ class Linter {
 	constructor() {
 		this.connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 		this.options = new OptionsResolver(this.connection);
+		this.fileMatcher = new FileMatcher();
 		this.documents = new TextDocuments();
 		this.documents.onDidChangeContent(event => this.validateSingle(event.document));
 		this.documents.listen(this.connection);
 
 		this.connection.onInitialize(params => this.onInitialize(params));
 		this.connection.onDidChangeConfiguration(params => {
-			let jshintOptions = (<Settings>params.settings).jshint ? (<Settings>params.settings).jshint.options : {};
-			this.options.clear(jshintOptions);
+			let jshintSettings = _.assign<Object, JSHintSettings>({
+				options: {},
+				exclude: {},
+				include: {
+					"**/*": true
+				}
+			}, (<Settings>params.settings).jshint);
+
+			this.options.clear(jshintSettings.options);
+			this.fileMatcher.set(jshintSettings.include, jshintSettings.exclude);
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
@@ -283,13 +330,18 @@ class Linter {
 	}
 
 	private validate(document: ITextDocument) {
-		let content = document.getText();
-		let JSHINT:JSHINT = this.lib.JSHINT;
-
 		let fsPath = Files.uriToFilePath(document.uri);
 		if (!fsPath) {
 			fsPath = this.workspaceRoot;
 		}
+
+		if (!this.fileMatcher.match(fsPath)) {
+			return;
+		}
+
+		let content = document.getText();
+		let JSHINT:JSHINT = this.lib.JSHINT;
+
 		let options = this.options.getOptions(fsPath) || {};
 		JSHINT(content, options, options.globals || {});
 		let diagnostics: Diagnostic[] = [];

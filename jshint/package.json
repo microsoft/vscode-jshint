@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
 	"description": "Integrates JSHint into VS Code.",
-	"version": "0.10.6",
+	"version": "0.10.7",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
@@ -41,6 +41,18 @@
 					"type": "object",
 					"default": {},
 					"description": "The jshint options object to provide args to the jshint command."
+				},
+				"jshint.include": {
+					"type": "object",
+					"default": {
+						"**/*": true
+					},
+					"description": "Control jshint is enabled for which files."
+				},
+				"jshint.exclude": {
+					"type": "object",
+					"default": {},
+					"description": "Control jshint is disabled for which files. The jshint is only enabled for files which is in jshint.include and not in jshint.exclude."
 				}
 			}
 		},
