@@ -42,17 +42,10 @@
 					"default": {},
 					"description": "The jshint options object to provide args to the jshint command."
 				},
-				"jshint.include": {
-					"type": "object",
-					"default": {
-						"**/*": true
-					},
-					"description": "Control jshint is enabled for which files."
-				},
 				"jshint.exclude": {
 					"type": "object",
 					"default": {},
-					"description": "Control jshint is disabled for which files. The jshint is only enabled for files which is in jshint.include and not in jshint.exclude."
+					"description": "Matching files and directories are being ignored by jshint."
 				}
 			}
 		},

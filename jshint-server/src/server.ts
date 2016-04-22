@@ -31,7 +31,6 @@ interface FileSettings {
 interface JSHintSettings {
 	enable: boolean;
 	options: JSHintOptions;
-	include: FileSettings;
 	exclude: FileSettings;
 }
 
@@ -225,27 +224,22 @@ class OptionsResolver {
 }
 
 class FileMatcher {
-	private include: string[];
 	private exclude: string[];
 
 	constructor() {
-		this.include = null;
 		this.exclude = null;
 	}
 
-	set(include: FileSettings, exclude: FileSettings): void {
+	set(exclude: FileSettings): void {
 		function pickTrueKeys(obj: FileSettings) {
 			return _.keys(_.pick(obj, Boolean));
 		}
 
-		this.include = pickTrueKeys(include);
 		this.exclude = pickTrueKeys(exclude);
 	}
 
 	match(path: string): boolean {
-		return _.some(this.include, (pattern) => {
-			return minimatch(path, pattern);
-		}) && _.every(this.exclude, (pattern) => {
+		return _.every(this.exclude, (pattern) => {
 			return !minimatch(path, pattern);
 		});
 	}
@@ -270,16 +264,9 @@ class Linter {
 
 		this.connection.onInitialize(params => this.onInitialize(params));
 		this.connection.onDidChangeConfiguration(params => {
-			let jshintSettings = _.assign<Object, JSHintSettings>({
-				options: {},
-				exclude: {},
-				include: {
-					"**/*": true
-				}
-			}, (<Settings>params.settings).jshint);
-
+			let jshintSettings = _.assign<Object, JSHintSettings>({ options: {}, exclude: {} }, (<Settings>params.settings).jshint);
 			this.options.clear(jshintSettings.options);
-			this.fileMatcher.set(jshintSettings.include, jshintSettings.exclude);
+			this.fileMatcher.set(jshintSettings.exclude);
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
