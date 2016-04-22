@@ -4,5 +4,14 @@ Integrates [JSHint](http://jshint.com/) into VS Code.
 
 ## Configuration Options
 
-- `jshint.enable`: enable/diable jshint. Is enabled by default.
-- `jshint.options`: an option bag as defined by the JSHint API [here](http://jshint.com/docs/options/). Defaults to an empty option bag.
+The jshint extension uses the standard jshint configuration options described on the [jshint web site](http://jshint.com/docs/options/).
+
+The options can be specified in a number of locations mostly mimicing jshint's default behavior. The extension looks for its configuration options the following way and stops at the first positive match:
+
+1. An options file specified in the user or workspace settings like this: `"jshint.options" : { "config" : "<file path>" }`
+1. The value of the `jshintConfig` attribute in a `package.json` file located in the current directory or any parent of the current directory.
+1. A `.jshintrc` file located in the current directory or any parent of the current directory.
+1. A `.jshintrc` file located in the user's home directory.
+1. The values specified within `jshint.options` in the user or workspace settings.
+
+In order to disable jshint for a workspace specify `"jshint.enable" : false` in the workspace settings. jshint is enabled by default.
