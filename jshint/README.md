@@ -15,3 +15,5 @@ The options can be specified in a number of locations mostly mimicing jshint's d
 1. The values specified within `jshint.options` in the user or workspace settings.
 
 In order to disable jshint for a workspace specify `"jshint.enable" : false` in the workspace settings. jshint is enabled by default.
+
+In order to ignore specific files or folders from being linted use `"jshint.exclude" : { "<glob pattern>" : true, "<glob pattern>" : true }` in the workspace or user settings. No files are excluded by default.
