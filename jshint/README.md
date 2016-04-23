@@ -12,7 +12,7 @@ The options can be specified in a number of locations mostly mimicing jshint's d
 1. The value of the `jshintConfig` attribute in a `package.json` file located in the current directory or any parent of the current directory.
 1. A `.jshintrc` file located in the current directory or any parent of the current directory.
 1. A `.jshintrc` file located in the user's home directory.
-1. The values specified within `jshint.options` in the user or workspace settings.
+1. The values specified within `jshint.options` in the user or workspace settings. By default `jshint.options` is empty.
 
 In order to disable jshint for a workspace specify `"jshint.enable" : false` in the workspace settings. jshint is enabled by default.
 
