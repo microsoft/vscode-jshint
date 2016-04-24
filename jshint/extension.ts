@@ -14,7 +14,7 @@ export function activate(context: ExtensionContext) {
 	let serverModule = path.join(__dirname, '..', 'server', 'server.js');
 	let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 	let serverOptions: ServerOptions = {
-		run: { module: serverModule, transport: TransportKind.ipc },
+		run: { module: serverModule, transport: TransportKind.ipc, options: debugOptions },
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions}
 	};
 	let clientOptions: LanguageClientOptions = {

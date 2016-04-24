@@ -232,7 +232,9 @@ class FileMatcher {
 
 	set(exclude: FileSettings): void {
 		function pickTrueKeys(obj: FileSettings) {
-			return _.keys(_.pick(obj, Boolean));
+			return _.keys(_.pickBy(obj, (value) => {
+				return value === true;
+			}));
 		}
 
 		this.exclude = pickTrueKeys(exclude);
