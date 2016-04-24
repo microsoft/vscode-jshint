@@ -14,6 +14,8 @@ The options can be specified in a number of locations mostly mimicing jshint's d
 1. A `.jshintrc` file located in the user's home directory.
 1. The values specified within `jshint.options` in the user or workspace settings. By default `jshint.options` is empty.
 
+`.jshintrc` can be chained using the `extends` attribute as described on [here](http://jshint.com/docs/cli/#specifying-linting-options).
+
 In order to disable jshint for a workspace specify `"jshint.enable" : false` in the workspace settings. jshint is enabled by default.
 
 In order to ignore specific files or folders from being linted use `"jshint.exclude" : { "<glob pattern>" : true, "<glob pattern>" : true }` in the workspace or user settings. No files are excluded by default.
