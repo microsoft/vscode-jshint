@@ -185,35 +185,13 @@ class OptionsResolver {
 			}
 		}
 
-		function isArray(value: any): boolean {
-			return Array.isArray(value);
-		}
-
-		function isPlainObject(value: any): boolean {
-			return (typeof value === 'object') && !isArray(value);
-		}
-
-		function merge(parent: any, child: any): any {
-			for (let key in child) {
-				if (isPlainObject(parent[key]) && isPlainObject(child[key])) {
-					merge(parent[key], child[key]);
-				} else if (isArray(parent[key]) && isArray(child[key])) {
-					parent[key] = parent[key].concat(child[key]);
-				} else {
-					parent[key] = child[key];
-				}
-			}
-
-			return parent;
-		}
-
 		function readJSHintFile(file: string, extendedFrom?: string): any {
 			let content = readJsonFile(file, extendedFrom);
 			if (content.extends) {
 				let baseFile = path.resolve(path.dirname(file), content.extends);
 
 				if (fs.existsSync(baseFile)) {
-					content = merge(readJSHintFile(baseFile, file), content);
+					content = _.merge(readJSHintFile(baseFile, file), content);
 				} else {
 					that.connection.window.showErrorMessage(`Can't find JSHint file ${baseFile} extended from ${file}`);
 				}
