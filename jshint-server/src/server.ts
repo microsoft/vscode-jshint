@@ -191,7 +191,11 @@ class OptionsResolver {
 				let baseFile = path.resolve(path.dirname(file), content.extends);
 
 				if (fs.existsSync(baseFile)) {
-					content = _.merge(readJSHintFile(baseFile, file), content);
+					content = _.mergeWith(readJSHintFile(baseFile, file), content, (baseValue, contentValue) => {
+						if (_.isArray(baseValue)) {
+    						return baseValue.concat(contentValue);
+  						}
+					});
 				} else {
 					that.connection.window.showErrorMessage(`Can't find JSHint file ${baseFile} extended from ${file}`);
 				}
