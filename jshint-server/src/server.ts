@@ -19,6 +19,9 @@ import path = require('path');
 import * as minimatch from 'minimatch';
 import * as _ from 'lodash';
 
+import processIgnoreFile = require('parse-gitignore');
+
+
 interface JSHintOptions {
 	config?: string;
 	[key: string]: any;
@@ -100,6 +103,19 @@ function getSeverity(problem: JSHintError): number {
 	return DiagnosticSeverity.Warning;
 }
 
+function locateFile(directory: string, fileName: string) {
+	let parent = directory;
+	do {
+		directory = parent;
+		let location = path.join(directory, fileName);
+		if (fs.existsSync(location)) {
+			return location;
+		}
+		parent = path.dirname(directory);
+	} while (parent !== directory);
+	return undefined;
+};
+
 const JSHINTRC = '.jshintrc';
 class OptionsResolver {
 
@@ -132,18 +148,6 @@ class OptionsResolver {
 
 	private readOptions(fsPath: string = null): any {
 		let that = this;
-		function locateFile(directory: string, fileName: string) {
-			let parent = directory;
-			do {
-				directory = parent;
-				let location = path.join(directory, fileName);
-				if (fs.existsSync(location)) {
-					return location;
-				}
-				parent = path.dirname(directory);
-			} while (parent !== directory);
-			return undefined;
-		};
 
 		function stripComments(content: string): string {
 			/**
@@ -162,7 +166,7 @@ class OptionsResolver {
 					// A line comment. If it ends in \r?\n then keep it.
 					let length = m4.length;
 					if (length > 2 && m4[length - 1] === '\n') {
-						return m4[length - 2] === '\r' ? '\r\n': '\n';
+						return m4[length - 2] === '\r' ? '\r\n' : '\n';
 					} else {
 						return "";
 					}
@@ -244,21 +248,27 @@ class OptionsResolver {
 	}
 }
 
+const JSHINTIGNORE = '.jshintignore';
 class FileMatcher {
-	private exclude: string[];
+	private defaultExcludePatterns: string[];
+	private excludeCache: { [key: string]: any };
 
 	constructor() {
-		this.exclude = null;
+		this.defaultExcludePatterns = null;
+		this.excludeCache = Object.create(null);
 	}
 
-	set(exclude: FileSettings): void {
-		function pickTrueKeys(obj: FileSettings) {
-			return _.keys(_.pickBy(obj, (value) => {
-				return value === true;
-			}));
-		}
+	private pickTrueKeys(obj: FileSettings) {
+		return _.keys(_.pickBy(obj, (value) => {
+			return value === true;
+		}));
+	}
 
-		this.exclude = pickTrueKeys(exclude);
+	public clear(exclude?: FileSettings): void {
+		this.excludeCache = Object.create(null);
+		if (exclude) {
+			this.defaultExcludePatterns = this.pickTrueKeys(exclude);
+		}
 	}
 
 	private relativeTo(fsPath: string, folder: string): string {
@@ -277,6 +287,27 @@ class FileMatcher {
 		return _.every(this.exclude, (pattern) => {
 			return !minimatch(relativePath, pattern);
 		});
+	};
+
+	public match(fsPath: string = null): boolean {
+		if (fsPath) {
+
+			if (this.excludeCache.hasOwnProperty(fsPath)) {
+				return this.excludeCache[fsPath];
+			}
+
+			let ignoreFile = locateFile(fsPath, JSHINTIGNORE);
+			if (ignoreFile) {
+				let excludePattern = processIgnoreFile(ignoreFile);
+				return this.doMatch(fsPath, excludePattern);
+			}
+
+			let shouldBeExcluded = this.doMatch(fsPath, this.defaultExcludePatterns);
+			this.excludeCache[fsPath] = shouldBeExcluded;
+			return shouldBeExcluded;
+		}
+
+		return false;
 	}
 }
 
@@ -301,11 +332,12 @@ class Linter {
 		this.connection.onDidChangeConfiguration(params => {
 			let jshintSettings = _.assign<Object, JSHintSettings>({ options: {}, exclude: {} }, (<Settings>params.settings).jshint);
 			this.options.clear(jshintSettings.options);
-			this.fileMatcher.set(jshintSettings.exclude);
+			this.fileMatcher.clear(jshintSettings.exclude);
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
 			this.options.clear();
+			this.fileMatcher.clear();
 			this.validateAll();
 		})
 	}
@@ -321,7 +353,7 @@ class Linter {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false });
 			}
 			this.lib = value;
-			let result: InitializeResult = { capabilities: { textDocumentSync: this.documents.syncKind }};
+			let result: InitializeResult = { capabilities: { textDocumentSync: this.documents.syncKind } };
 			return result;
 		}, (error) => {
 			return Promise.reject(
