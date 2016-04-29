@@ -45,7 +45,7 @@
 				"jshint.exclude": {
 					"type": "object",
 					"default": {},
-					"description": "Matching files and directories are being ignored by jshint."
+					"description": "Matching files and directories are being ignored by jshint. Glob patterns are interpreted relative to the workspace's root folder."
 				}
 			}
 		},

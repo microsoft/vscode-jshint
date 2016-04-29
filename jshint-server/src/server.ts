@@ -261,9 +261,21 @@ class FileMatcher {
 		this.exclude = pickTrueKeys(exclude);
 	}
 
-	match(path: string): boolean {
+	private relativeTo(fsPath: string, folder: string): string {
+		if (folder && 0 === fsPath.indexOf(folder)) {
+			let cuttingPoint = folder.length;
+			if (cuttingPoint < fsPath.length && '/' === fsPath.charAt(cuttingPoint)) {
+				cuttingPoint += 1;
+			}
+			return fsPath.substr(cuttingPoint);
+		}
+		return fsPath;
+	}
+
+	match(path: string, root? : string): boolean {
+		let relativePath = this.relativeTo(path, root);
 		return _.every(this.exclude, (pattern) => {
-			return !minimatch(path, pattern);
+			return !minimatch(relativePath, pattern);
 		});
 	}
 }
@@ -357,7 +369,7 @@ class Linter {
 
 		let diagnostics: Diagnostic[] = [];
 
-		if (this.fileMatcher.match(fsPath)) {
+		if (this.fileMatcher.match(fsPath, this.workspaceRoot)) {
 			let errors = this.lintContent(document.getText(), fsPath);
 			if (errors) {
 				errors.forEach((error) => {
