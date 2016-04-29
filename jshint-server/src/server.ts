@@ -193,8 +193,8 @@ class OptionsResolver {
 				if (fs.existsSync(baseFile)) {
 					content = _.mergeWith(readJSHintFile(baseFile, file), content, (baseValue, contentValue) => {
 						if (_.isArray(baseValue)) {
-    						return baseValue.concat(contentValue);
-  						}
+							return baseValue.concat(contentValue);
+						}
 					});
 				} else {
 					that.connection.window.showErrorMessage(`Can't find JSHint file ${baseFile} extended from ${file}`);
@@ -339,30 +339,34 @@ class Linter {
 		}
 	}
 
+
+	private lintContent(content: string, fsPath: string): JSHintError[] {
+		let JSHINT: JSHINT = this.lib.JSHINT;
+		let options = this.options.getOptions(fsPath) || {};
+		JSHINT(content, options, options.globals || {});
+		return JSHINT.errors;
+	}
+
+
 	private validate(document: ITextDocument) {
+
 		let fsPath = Files.uriToFilePath(document.uri);
 		if (!fsPath) {
 			fsPath = this.workspaceRoot;
 		}
 
-		if (!this.fileMatcher.match(fsPath)) {
-			return;
-		}
-
-		let content = document.getText();
-		let JSHINT:JSHINT = this.lib.JSHINT;
-
-		let options = this.options.getOptions(fsPath) || {};
-		JSHINT(content, options, options.globals || {});
 		let diagnostics: Diagnostic[] = [];
-		let errors: JSHintError[] = JSHINT.errors;
-		if (errors) {
-			errors.forEach((error) => {
-				// For some reason the errors array contains null.
-				if (error) {
-					diagnostics.push(makeDiagnostic(error));
-				}
-			});
+
+		if (this.fileMatcher.match(fsPath)) {
+			let errors = this.lintContent(document.getText(), fsPath);
+			if (errors) {
+				errors.forEach((error) => {
+					// For some reason the errors array contains null.
+					if (error) {
+						diagnostics.push(makeDiagnostic(error));
+					}
+				});
+			}
 		}
 		this.connection.sendDiagnostics({ uri: document.uri, diagnostics });
 	}
