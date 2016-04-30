@@ -255,7 +255,7 @@ class FileMatcher {
 
 	constructor() {
 		this.defaultExcludePatterns = null;
-		this.excludeCache = Object.create(null);
+		this.excludeCache = {};
 	}
 
 	private pickTrueKeys(obj: FileSettings) {
@@ -265,7 +265,7 @@ class FileMatcher {
 	}
 
 	public clear(exclude?: FileSettings): void {
-		this.excludeCache = Object.create(null);
+		this.excludeCache = {};
 		if (exclude) {
 			this.defaultExcludePatterns = this.pickTrueKeys(exclude);
 		}
@@ -282,32 +282,39 @@ class FileMatcher {
 		return fsPath;
 	}
 
-	match(path: string, root? : string): boolean {
+	private folderOf(fsPath:string) : string {
+		let index = fsPath.lastIndexOf('/');
+		return index > -1 ? fsPath.substr(0, index) : fsPath;
+	}
+
+	private match(excludePatters: string[], path: string, root: string): boolean {
 		let relativePath = this.relativeTo(path, root);
-		return _.every(this.exclude, (pattern) => {
-			return !minimatch(relativePath, pattern);
+		return _.some(excludePatters, (pattern) => {
+			return minimatch(relativePath, pattern);
 		});
 	};
 
-	public match(fsPath: string = null): boolean {
+	public excludes(fsPath: string, root: string): boolean {
 		if (fsPath) {
 
 			if (this.excludeCache.hasOwnProperty(fsPath)) {
 				return this.excludeCache[fsPath];
 			}
 
+			let shouldBeExcluded = false;
 			let ignoreFile = locateFile(fsPath, JSHINTIGNORE);
+
 			if (ignoreFile) {
-				let excludePattern = processIgnoreFile(ignoreFile);
-				return this.doMatch(fsPath, excludePattern);
+				shouldBeExcluded = this.match(processIgnoreFile(ignoreFile), fsPath, this.folderOf(ignoreFile));
+			} else {
+			 	shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
 			}
 
-			let shouldBeExcluded = this.doMatch(fsPath, this.defaultExcludePatterns);
 			this.excludeCache[fsPath] = shouldBeExcluded;
 			return shouldBeExcluded;
 		}
 
-		return false;
+		return true;
 	}
 }
 
@@ -401,7 +408,7 @@ class Linter {
 
 		let diagnostics: Diagnostic[] = [];
 
-		if (this.fileMatcher.match(fsPath, this.workspaceRoot)) {
+		if (!this.fileMatcher.excludes(fsPath, this.workspaceRoot)) {
 			let errors = this.lintContent(document.getText(), fsPath);
 			if (errors) {
 				errors.forEach((error) => {
