@@ -307,7 +307,7 @@ class FileMatcher {
 			if (ignoreFile) {
 				shouldBeExcluded = this.match(processIgnoreFile(ignoreFile), fsPath, this.folderOf(ignoreFile));
 			} else {
-			 	shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
+				shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
 			}
 
 			this.excludeCache[fsPath] = shouldBeExcluded;
@@ -343,14 +343,34 @@ class Linter {
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
-			this.options.clear();
-			this.fileMatcher.clear();
-			this.validateAll();
+			var needsValidating = false;
+			if (params.changes) {
+				params.changes.forEach(change => {
+					switch (this.lastSegment(change.uri)) {
+						case JSHINTRC:
+							this.options.clear();
+							needsValidating = true;
+							break;
+						case JSHINTIGNORE:
+							this.fileMatcher.clear();
+							needsValidating = true;
+							break;
+					}
+				});
+			}
+			if (needsValidating) {
+				this.validateAll();
+			}
 		})
 	}
 
 	public listen(): void {
 		this.connection.listen();
+	}
+
+	private lastSegment(fsPath: string): string {
+		let index = fsPath.lastIndexOf('/');
+		return index > -1 ? fsPath.substr(index + 1) : fsPath;
 	}
 
 	private onInitialize(params: InitializeParams): Thenable<InitializeResult | ResponseError<InitializeError>> {

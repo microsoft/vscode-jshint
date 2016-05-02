@@ -21,7 +21,7 @@ export function activate(context: ExtensionContext) {
 		documentSelector: ['javascript', 'javascriptreact'],
 		synchronize: {
 			configurationSection: 'jshint',
-			fileEvents: workspace.createFileSystemWatcher('**/.jshintrc')
+			fileEvents: workspace.createFileSystemWatcher('**/.jshint{rc,ignore}')
 		}
 	}
 
