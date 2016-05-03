@@ -33,7 +33,9 @@ interface FileSettings {
 
 interface JSHintSettings {
 	enable: boolean;
+	config?: string;
 	options: JSHintOptions;
+	excludePath?: string;
 	exclude: FileSettings;
 }
 
@@ -120,21 +122,25 @@ const JSHINTRC = '.jshintrc';
 class OptionsResolver {
 
 	private connection: IConnection;
-	// These are the settings that come from vscode
+	private configPath: string;
 	private jshintOptions: JSHintOptions;
 	private optionsCache: { [key: string]: any };
 
 	constructor(connection: IConnection) {
 		this.connection = connection;
 		this.clear();
+		this.configPath = null;
 		this.jshintOptions = null;
+	}
+
+	public configure(path: string, jshintOptions?: JSHintOptions) {
+		this.optionsCache = Object.create(null);
+		this.configPath = path;
+		this.jshintOptions = jshintOptions;
 	}
 
 	public clear(jshintOptions?: JSHintOptions) {
 		this.optionsCache = Object.create(null);
-		if (jshintOptions) {
-			this.jshintOptions = jshintOptions;
-		}
 	}
 
 	public getOptions(fsPath: string): any {
@@ -217,7 +223,12 @@ class OptionsResolver {
 			return process.env[isWindows() ? 'USERPROFILE' : 'HOME'];
 		}
 
+		if (this.configPath && fs.existsSync(this.configPath)) {
+			return readJsonFile(this.configPath);
+		}
+
 		let jshintOptions = this.jshintOptions;
+		// backward compatibility
 		if (jshintOptions && jshintOptions.config && fs.existsSync(jshintOptions.config)) {
 			return readJsonFile(jshintOptions.config);
 		}
@@ -250,10 +261,12 @@ class OptionsResolver {
 
 const JSHINTIGNORE = '.jshintignore';
 class FileMatcher {
+	private configPath: string;
 	private defaultExcludePatterns: string[];
 	private excludeCache: { [key: string]: any };
 
 	constructor() {
+		this.configPath = null;
 		this.defaultExcludePatterns = null;
 		this.excludeCache = {};
 	}
@@ -264,11 +277,14 @@ class FileMatcher {
 		}));
 	}
 
+	public configure(path: string, exclude?: FileSettings): void {
+		this.configPath = path;
+		this.excludeCache = {};
+		this.defaultExcludePatterns = this.pickTrueKeys(exclude);
+	}
+
 	public clear(exclude?: FileSettings): void {
 		this.excludeCache = {};
-		if (exclude) {
-			this.defaultExcludePatterns = this.pickTrueKeys(exclude);
-		}
 	}
 
 	private relativeTo(fsPath: string, folder: string): string {
@@ -282,7 +298,7 @@ class FileMatcher {
 		return fsPath;
 	}
 
-	private folderOf(fsPath:string) : string {
+	private folderOf(fsPath: string): string {
 		let index = fsPath.lastIndexOf('/');
 		return index > -1 ? fsPath.substr(0, index) : fsPath;
 	}
@@ -302,12 +318,16 @@ class FileMatcher {
 			}
 
 			let shouldBeExcluded = false;
-			let ignoreFile = locateFile(fsPath, JSHINTIGNORE);
 
-			if (ignoreFile) {
-				shouldBeExcluded = this.match(processIgnoreFile(ignoreFile), fsPath, this.folderOf(ignoreFile));
+			if (this.configPath && fs.existsSync(this.configPath)) {
+				shouldBeExcluded = this.match(processIgnoreFile(this.configPath), fsPath, root);
 			} else {
-				shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
+				let ignoreFile = locateFile(fsPath, JSHINTIGNORE);
+				if (ignoreFile) {
+					shouldBeExcluded = this.match(processIgnoreFile(ignoreFile), fsPath, this.folderOf(ignoreFile));
+				} else {
+					shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
+				}
 			}
 
 			this.excludeCache[fsPath] = shouldBeExcluded;
@@ -338,8 +358,8 @@ class Linter {
 		this.connection.onInitialize(params => this.onInitialize(params));
 		this.connection.onDidChangeConfiguration(params => {
 			let jshintSettings = _.assign<Object, JSHintSettings>({ options: {}, exclude: {} }, (<Settings>params.settings).jshint);
-			this.options.clear(jshintSettings.options);
-			this.fileMatcher.clear(jshintSettings.exclude);
+			this.options.configure(jshintSettings.config, jshintSettings.options);
+			this.fileMatcher.configure(jshintSettings.excludePath, jshintSettings.exclude);
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
