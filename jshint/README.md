@@ -9,7 +9,7 @@ The jshint extension uses the standard jshint configuration options described on
 The options can be specified in a number of locations mostly mimicing jshint's default behavior. The extension looks for its configuration
 options the following way and stops at the first positive match:
 
-1. An options file specified in the user or workspace settings like this: `"jshint.options" : { "config" : "<file path>" }`
+1. An options file specified in the user or workspace settings like this: `"jshint.config" : "<file path>"`. The file path is interpreted relative to the workspace's root folder.
 1. The value of the `jshintConfig` attribute in a `package.json` file located in the current directory or any parent of the current directory.
 1. A `.jshintrc` file located in the current directory or any parent of the current directory.
 1. A `.jshintrc` file located in the user's home directory.
@@ -23,6 +23,8 @@ options the following way and stops at the first positive match:
 In order to ignore specific files or folders from being linted exclude options can be specified in a number of locations
 mostly mimicing jshint's default behavior. The extenion looks for its exclude options the following way and stops at the first positive match:
 
+1. A file specified in the user or workspace settings like this: `"jshint.excludePath" : "<file path>"`. The file path is interpreted relative to the workspace's root folder.
+The file contains glob patterns specifying files that should be excluded. The glob patterns are interpreted relative to the workspace's root folder.
 1. A `.jshintignore` file located in the current directory or any parent of the current directory. The glob patterns in this file are interpreted relative to the location of the
 `.jshintignore` file.
 1. The value of the `jshint.exclude` attribute in the user or workspace settings. The attribute has the following form: `"jshint.exclude" : { "<glob pattern>" : true, "<glob pattern>" : true }`.
