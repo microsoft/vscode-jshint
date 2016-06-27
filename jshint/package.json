@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
 	"description": "Integrates JSHint into VS Code. JSHint is a linter for JavaScript",
-	"version": "0.10.13",
+	"version": "0.10.14",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
@@ -38,7 +38,7 @@
 					"description": "Control whether or not jshint is enabled for JavaScript files."
 				},
 				"jshint.config" : {
-					"type": "string",
+					"type": ["string", "null"],
 					"default": null,
 					"description": "A path to file containing the configuration options for jshint. If the file exists it overrides jshint.options and any .jshintrc file"
 				},
@@ -48,7 +48,7 @@
 					"description": "The jshint options object to provide args to the jshint command."
 				},
 				"jshint.excludePath": {
-					"type": "string",
+					"type": ["string", "null"],
 					"default": null,
 					"description": "A path to a file containing patterns describing which files and directories should be ignored by jshint. If the file exists it overrides jshint.exclude and any .jshintignore file."
 				},
