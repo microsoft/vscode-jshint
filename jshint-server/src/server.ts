@@ -4,13 +4,8 @@
  * ------------------------------------------------------------------------------------------ */
 
 import {
-	createConnection, IConnection,
-	ResponseError, RequestType, IRequestHandler, NotificationType, INotificationHandler,
-	InitializeParams, InitializeResult, InitializeError,
-	DidChangeConfigurationParams, DidChangeWatchedFilesParams,
-	Diagnostic, DiagnosticSeverity, Position, Files,
-	TextDocuments, ITextDocument,
-	ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
+	createConnection, IConnection, ResponseError, InitializeParams, InitializeResult, InitializeError,
+	Diagnostic, DiagnosticSeverity, Files, TextDocuments, ITextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
 } from 'vscode-languageserver';
 
 import fs = require('fs');
@@ -23,12 +18,12 @@ import processIgnoreFile = require('parse-gitignore');
 
 
 interface JSHintOptions {
-	config?: string;
+	config?: string
 	[key: string]: any;
 }
 
 interface FileSettings {
-	[pattern: string]: boolean
+	[pattern: string]: boolean;
 }
 
 interface JSHintSettings {
@@ -40,7 +35,7 @@ interface JSHintSettings {
 }
 
 interface Settings {
-	jshint: JSHintSettings,
+	jshint: JSHintSettings;
 	[key: string]: any;
 }
 
@@ -353,6 +348,10 @@ class Linter {
 		this.fileMatcher = new FileMatcher();
 		this.documents = new TextDocuments();
 		this.documents.onDidChangeContent(event => this.validateSingle(event.document));
+		this.documents.onDidClose((event) => {
+			this.connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+			console.log('did sent');
+		});
 		this.documents.listen(this.connection);
 
 		this.connection.onInitialize(params => this.onInitialize(params));
@@ -381,7 +380,7 @@ class Linter {
 			if (needsValidating) {
 				this.validateAll();
 			}
-		})
+		});
 	}
 
 	public listen(): void {
