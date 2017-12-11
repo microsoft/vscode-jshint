@@ -24,7 +24,8 @@
 		"vscode": "^0.10.1"
 	},
 	"activationEvents": [
-		"onLanguage:javascript", "onLanguage:javascriptreact"
+		"onLanguage:javascript",
+		"onLanguage:javascriptreact"
 	],
 	"main": "./out/extension",
 	"contributes": {
@@ -37,8 +38,11 @@
 					"default": true,
 					"description": "Control whether or not jshint is enabled for JavaScript files."
 				},
-				"jshint.config" : {
-					"type": ["string", "null"],
+				"jshint.config": {
+					"type": [
+						"string",
+						"null"
+					],
 					"default": null,
 					"description": "A path to file containing the configuration options for jshint. If the file exists it overrides jshint.options and any .jshintrc file"
 				},
@@ -48,7 +52,10 @@
 					"description": "The jshint options object to provide args to the jshint command."
 				},
 				"jshint.excludePath": {
-					"type": ["string", "null"],
+					"type": [
+						"string",
+						"null"
+					],
 					"default": null,
 					"description": "A path to a file containing patterns describing which files and directories should be ignored by jshint. If the file exists it overrides jshint.exclude and any .jshintignore file."
 				},
