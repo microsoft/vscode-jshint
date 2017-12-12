@@ -5,7 +5,7 @@
 
 import {
 	createConnection, IConnection, ResponseError, InitializeParams, InitializeResult, InitializeError,
-	Diagnostic, DiagnosticSeverity, Files, TextDocuments, ITextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
+	Diagnostic, DiagnosticSeverity, Files, TextDocuments, TextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
 } from 'vscode-languageserver';
 
 import fs = require('fs');
@@ -15,6 +15,7 @@ import * as minimatch from 'minimatch';
 import * as _ from 'lodash';
 
 import processIgnoreFile = require('parse-gitignore');
+import { HandlerResult } from 'vscode-jsonrpc';
 
 
 interface JSHintOptions {
@@ -91,7 +92,7 @@ function makeDiagnostic(problem: JSHintError): Diagnostic {
 	};
 }
 
-function getSeverity(problem: JSHintError): number {
+function getSeverity(problem: JSHintError): DiagnosticSeverity {
 	// If there is no code (that would be very odd) we'll push it as an error as well.
 	// See http://jshint.com/docs/ (search for error. It is only mentioned once.)
 	if (!problem.code || problem.code[0] === 'E') {
@@ -392,15 +393,14 @@ class Linter {
 		return index > -1 ? fsPath.substr(index + 1) : fsPath;
 	}
 
-	private onInitialize(params: InitializeParams): Thenable<InitializeResult | ResponseError<InitializeError>> {
+	private onInitialize(params: InitializeParams): HandlerResult<InitializeResult, InitializeError> {
 		this.workspaceRoot = params.rootPath;
 		return Files.resolveModule(this.workspaceRoot, 'jshint').then((value) => {
 			if (!value.JSHINT) {
-				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false });
+				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false }) as any;
 			}
 			this.lib = value;
-			let result: InitializeResult = { capabilities: { textDocumentSync: this.documents.syncKind } };
-			return result;
+			return { capabilities: { textDocumentSync: this.documents.syncKind } };
 		}, (error) => {
 			return Promise.reject(
 				new ResponseError<InitializeError>(99,
@@ -421,7 +421,7 @@ class Linter {
 		tracker.sendErrors(this.connection);
 	}
 
-	private validateSingle(document: ITextDocument): void {
+	private validateSingle(document: TextDocument): void {
 		try {
 			this.validate(document);
 		} catch (err) {
@@ -438,7 +438,7 @@ class Linter {
 	}
 
 
-	private validate(document: ITextDocument) {
+	private validate(document: TextDocument) {
 
 		let fsPath = Files.uriToFilePath(document.uri);
 		if (!fsPath) {
@@ -461,7 +461,7 @@ class Linter {
 		this.connection.sendDiagnostics({ uri: document.uri, diagnostics });
 	}
 
-	private getMessage(err: any, document: ITextDocument): string {
+	private getMessage(err: any, document: TextDocument): string {
 		let result: string = null;
 		if (typeof err.message === 'string' || err.message instanceof String) {
 			result = <string>err.message;

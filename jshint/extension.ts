@@ -11,8 +11,8 @@ export function activate(context: ExtensionContext) {
 
 	// We need to go one level up since an extension compile the js code into
 	// the output folder.
-	let serverModule = path.join(__dirname, '..', 'server', 'server.js');
-	let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
+	let serverModule = context.asAbsolutePath(path.join('jshint-server', 'out', 'server.js'));
+	let debugOptions = { execArgv: ["--nolazy", "--inspect=6004"] };
 	let serverOptions: ServerOptions = {
 		run: { module: serverModule, transport: TransportKind.ipc },
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions}
