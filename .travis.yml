@@ -2,10 +2,10 @@ language: node_js
 sudo: false
 
 node_js:
-  - "0.12"
+  - "8.9"
   
 install:
-  - cd jshint-server && npm install && cd ../jshint && npm install && cd ..
+  - npm install
   
 script:
-  - cd jshint-server && npm run compile && cd ../jshint && npm run compile && cd ..
+  - npm run compile
