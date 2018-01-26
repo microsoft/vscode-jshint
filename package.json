@@ -1,0 +1,93 @@
+{
+	"name": "jshint",
+	"description": "Integrates JSHint into VS Code. JSHint is a linter for JavaScript",
+	"version": "0.10.15",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-jshint.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Microsoft/vscode-jshint/issues"
+	},
+	"icon": "jshint_icon.png",
+	"galleryBanner": {
+		"color": "#5c2d91",
+		"theme": "dark"
+	},
+	"categories": [
+		"Linters"
+	],
+	"publisher": "dbaeumer",
+	"engines": {
+		"vscode": "^1.19.0"
+	},
+	"activationEvents": [
+		"onLanguage:javascript",
+		"onLanguage:javascriptreact"
+	],
+	"main": "./jshint/out/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "JSHint configuration",
+			"properties": {
+				"jshint.enable": {
+					"type": "boolean",
+					"default": true,
+					"description": "Control whether or not jshint is enabled for JavaScript files."
+				},
+				"jshint.config": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "A path to file containing the configuration options for jshint. If the file exists it overrides jshint.options and any .jshintrc file"
+				},
+				"jshint.options": {
+					"type": "object",
+					"default": {},
+					"description": "The jshint options object to provide args to the jshint command."
+				},
+				"jshint.excludePath": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "A path to a file containing patterns describing which files and directories should be ignored by jshint. If the file exists it overrides jshint.exclude and any .jshintignore file."
+				},
+				"jshint.exclude": {
+					"type": "object",
+					"default": {},
+					"description": "Matching files and directories are being ignored by jshint. Glob patterns are interpreted relative to the workspace's root folder."
+				}
+			}
+		},
+		"jsonValidation": [
+			{
+				"fileMatch": "jshint.json",
+				"url": "http://json.schemastore.org/grunt-jshint-task"
+			},
+			{
+				"fileMatch": ".jshintrc",
+				"url": "http://json.schemastore.org/jshintrc"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "cd jshint && npm run update-vscode && cd .. && npm run compile",
+		"compile:client": "tsc -p jshint/tsconfig.json",
+		"compile:server": "tsc -p jshint-server/tsconfig.json",
+		"watch:client": "tsc -w -p jshint/tsconfig.json",
+		"watch:server": "tsc -w -p jshint-server/tsconfig.json",
+		"compile": "npm run compile:client && npm run compile:server",
+		"postinstall": "cd jshint && npm install && cd ../jshint-server && npm install && cd .."
+	},
+	"devDependencies": {
+		"typescript": "^2.6.2",
+		"@types/node": "^9.4.0"
+	}
+}

@@ -5,14 +5,8 @@
 Extension to integrate [JSHint](http://jshint.com/) into VS Code.
 
 ## Development setup
-- run npm install inside the `jshint` and `jshint-server` folders
-- open VS Code on `jshint` and `jshint-server`
+- run `npm install` at the root to install all dependencies
+- open VS Code on the root
+- use `npm run compile` to compile the client and server
 
-## Developing the server
-- open VS Code on `jshint-server`
-- run `npm run compile` or `npm run watch` to build the server and copy it into the `jshint` folder
-- to debug press F5 which attaches a debugger to the server
-
-## Developing the extension/client
-- open VS Code on `jshint`
-- run F5 to build and debug the extension
+To debug the extension, use the `Launch Extension` configuration from the debug view. Once this is running and the extension has been activated by opening a js file, the server can be debugged with the `Attach to Server` configuration.
