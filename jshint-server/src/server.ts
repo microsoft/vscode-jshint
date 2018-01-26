@@ -33,6 +33,7 @@ interface JSHintSettings {
 	options: JSHintOptions;
 	excludePath?: string;
 	exclude: FileSettings;
+	reportWarningsAsErrors: boolean;
 }
 
 interface Settings {
@@ -69,36 +70,6 @@ interface PackageJSHintConfig {
 interface JSHINT {
 	(content: string, options: any, globals: any): void;
 	errors: JSHintError[];
-}
-
-function makeDiagnostic(problem: JSHintError): Diagnostic {
-	// Setting errors (and potentially global file errors) will report on line zero, char zero.
-	// Ensure that the start and end are >=0 (gets dropped by one in the return)
-	if (problem.line <= 0) {
-		problem.line = 1;
-	}
-	if (problem.character <= 0) {
-		problem.character = 1;
-	}
-	return {
-		message: problem.reason + (problem.code ? ` (${problem.code})` : ''),
-		severity: getSeverity(problem),
-		source: 'jshint',
-		code: problem.code,
-		range: {
-			start: { line: problem.line - 1, character: problem.character - 1 },
-			end: { line: problem.line - 1, character: problem.character - 1 }
-		}
-	};
-}
-
-function getSeverity(problem: JSHintError): DiagnosticSeverity {
-	// If there is no code (that would be very odd) we'll push it as an error as well.
-	// See http://jshint.com/docs/ (search for error. It is only mentioned once.)
-	if (!problem.code || problem.code[0] === 'E') {
-		return DiagnosticSeverity.Error;
-	}
-	return DiagnosticSeverity.Warning;
 }
 
 function locateFile(directory: string, fileName: string) {
@@ -339,6 +310,7 @@ class Linter {
 	private options: OptionsResolver;
 	private fileMatcher: FileMatcher;
 	private documents: TextDocuments;
+	private settings: JSHintSettings;
 
 	private workspaceRoot: string;
 	private lib: any;
@@ -357,9 +329,10 @@ class Linter {
 
 		this.connection.onInitialize(params => this.onInitialize(params));
 		this.connection.onDidChangeConfiguration(params => {
-			let jshintSettings = _.assign<Object, JSHintSettings>({ options: {}, exclude: {} }, (<Settings>params.settings).jshint);
-			this.options.configure(jshintSettings.config, jshintSettings.options);
-			this.fileMatcher.configure(jshintSettings.excludePath, jshintSettings.exclude);
+			this.settings = _.assign<Object, JSHintSettings>({ options: {}, exclude: {} }, (<Settings>params.settings).jshint);
+			const { config, options, excludePath, exclude } = this.settings;
+			this.options.configure(config, options);
+			this.fileMatcher.configure(excludePath, exclude);
 			this.validateAll();
 		});
 		this.connection.onDidChangeWatchedFiles(params => {
@@ -453,12 +426,42 @@ class Linter {
 				errors.forEach((error) => {
 					// For some reason the errors array contains null.
 					if (error) {
-						diagnostics.push(makeDiagnostic(error));
+						diagnostics.push(this.makeDiagnostic(error));
 					}
 				});
 			}
 		}
 		this.connection.sendDiagnostics({ uri: document.uri, diagnostics });
+	}
+
+	private makeDiagnostic(problem: JSHintError): Diagnostic {
+		// Setting errors (and potentially global file errors) will report on line zero, char zero.
+		// Ensure that the start and end are >=0 (gets dropped by one in the return)
+		if (problem.line <= 0) {
+			problem.line = 1;
+		}
+		if (problem.character <= 0) {
+			problem.character = 1;
+		}
+		return {
+			message: problem.reason + (problem.code ? ` (${problem.code})` : ''),
+			severity: this.getSeverity(problem),
+			source: 'jshint',
+			code: problem.code,
+			range: {
+				start: { line: problem.line - 1, character: problem.character - 1 },
+				end: { line: problem.line - 1, character: problem.character - 1 }
+			}
+		};
+	}
+	
+	private getSeverity(problem: JSHintError): DiagnosticSeverity {
+		// If there is no code (that would be very odd) we'll push it as an error as well.
+		// See http://jshint.com/docs/ (search for error. It is only mentioned once.)
+		if (!problem.code || problem.code[0] === 'E' || this.settings.reportWarningsAsErrors) {
+			return DiagnosticSeverity.Error;
+		}
+		return DiagnosticSeverity.Warning;
 	}
 
 	private getMessage(err: any, document: TextDocument): string {

@@ -63,6 +63,11 @@
 					"type": "object",
 					"default": {},
 					"description": "Matching files and directories are being ignored by jshint. Glob patterns are interpreted relative to the workspace's root folder."
+				},
+				"jshint.reportWarningsAsErrors": {
+					"type": "boolean",
+					"default": false,
+					"description": "Report warnings as errors"
 				}
 			}
 		},
