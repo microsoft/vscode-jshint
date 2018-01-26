@@ -21,7 +21,7 @@
 	],
 	"publisher": "dbaeumer",
 	"engines": {
-		"vscode": "^1.16.0"
+		"vscode": "^1.19.0"
 	},
 	"activationEvents": [
 		"onLanguage:javascript",
@@ -87,7 +87,7 @@
 		"postinstall": "cd jshint && npm install && cd ../jshint-server && npm install && cd .."
 	},
 	"devDependencies": {
-		"typescript": "^2.6.1",
-		"@types/node": "^6.0.90"
+		"typescript": "^2.6.2",
+		"@types/node": "^9.4.0"
 	}
 }
