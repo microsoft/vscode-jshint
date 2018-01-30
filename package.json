@@ -25,7 +25,8 @@
 	},
 	"activationEvents": [
 		"onLanguage:javascript",
-		"onLanguage:javascriptreact"
+		"onLanguage:javascriptreact",
+		"onLanguage:html"
 	],
 	"main": "./jshint/out/extension",
 	"contributes": {
@@ -68,6 +69,11 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Report warnings as errors"
+				},
+				"jshint.lintHTML": {
+					"type": "boolean",
+					"default": false,
+					"description": "Lint JavaScript embedded in HTML"
 				}
 			}
 		},

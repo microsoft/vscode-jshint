@@ -18,7 +18,7 @@ export function activate(context: ExtensionContext) {
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions}
 	};
 	let clientOptions: LanguageClientOptions = {
-		documentSelector: ['javascript', 'javascriptreact'],
+		documentSelector: ['javascript', 'javascriptreact', 'html'],
 		synchronize: {
 			configurationSection: 'jshint',
 			fileEvents: workspace.createFileSystemWatcher('**/.jshint{rc,ignore}')

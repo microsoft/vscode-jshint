@@ -13,6 +13,7 @@ import path = require('path');
 
 import * as minimatch from 'minimatch';
 import * as _ from 'lodash';
+import * as htmlparser from 'htmlparser2';
 
 import processIgnoreFile = require('parse-gitignore');
 import { HandlerResult } from 'vscode-jsonrpc';
@@ -34,6 +35,7 @@ interface JSHintSettings {
 	excludePath?: string;
 	exclude: FileSettings;
 	reportWarningsAsErrors: boolean;
+	lintHTML: boolean;
 }
 
 interface Settings {
@@ -410,8 +412,47 @@ class Linter {
 		return JSHINT.errors;
 	}
 
+	private getEmbeddedJavascript(html: string): string {
+		let embeddedJS = [];
+		let index = 0;
+		let inscript = false;
+		let parser = new htmlparser.Parser({
+			onopentag: (name, attribs) => {
+				if (name === "script" && attribs.type === "text/javascript") {
+					// Push new lines for lines between previous script tag and this one to preserve location information
+					embeddedJS.push.apply(embeddedJS, html.slice(index, parser.endIndex).match(/\n\r|\n|\r/g));
+					inscript = true;
+				}
+			},
+			ontext(data) {
+				if (!inscript)
+				  return;
 
-	private validate(document: TextDocument) {
+				// Collect JavaScript code
+				embeddedJS.push(data);
+			},
+			onclosetag: (name) => {
+				if (name !== "script" || !inscript) {
+					return;
+				}
+
+				index = parser.startIndex;
+				inscript = false;
+			}
+		});
+
+		parser.write(html);
+		parser.end();
+
+		return embeddedJS.join("");
+	}
+
+	private validate(document: TextDocument): void {
+		if (!this.settings.lintHTML && document.languageId === "html") {
+			// If the setting is toggled, errors need to be cleared
+			this.connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
+			return;
+		}
 
 		let fsPath = Files.uriToFilePath(document.uri);
 		if (!fsPath) {
@@ -421,7 +462,8 @@ class Linter {
 		let diagnostics: Diagnostic[] = [];
 
 		if (!this.fileMatcher.excludes(fsPath, this.workspaceRoot)) {
-			let errors = this.lintContent(document.getText(), fsPath);
+			const content = document.languageId === "html" ? this.getEmbeddedJavascript(document.getText()) : document.getText();
+			let errors = this.lintContent(content, fsPath);
 			if (errors) {
 				errors.forEach((error) => {
 					// For some reason the errors array contains null.
