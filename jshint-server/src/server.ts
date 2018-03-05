@@ -408,6 +408,10 @@ class Linter {
 	private lintContent(content: string, fsPath: string): JSHintError[] {
 		let JSHINT: JSHINT = this.lib.JSHINT;
 		let options = this.options.getOptions(fsPath) || {};
+
+		// Workaround for https://github.com/jshint/jshint/issues/3151, tab characters should increment the column number by 1, not 4
+		options.indent = 1;
+
 		JSHINT(content, options, options.globals || {});
 		return JSHINT.errors;
 	}
@@ -482,9 +486,11 @@ class Linter {
 		if (problem.line <= 0) {
 			problem.line = 1;
 		}
+
 		if (problem.character <= 0) {
 			problem.character = 1;
 		}
+
 		return {
 			message: problem.reason + (problem.code ? ` (${problem.code})` : ''),
 			severity: this.getSeverity(problem),
