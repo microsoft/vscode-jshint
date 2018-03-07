@@ -2,6 +2,9 @@
 
 Integrates [JSHint](http://jshint.com/) into VS Code.
 
+The extension looks for a `jshint` module in the current directory and in the global node package location. You can install `jshint` locally with `npm install jshint` or globally
+with `npm install -g jshint`. If your `jshint` module is in a different location, use the `jshint.nodePath` setting to specify the correct path.
+
 ## Configuration Options
 
 The jshint extension uses the standard jshint configuration options described on the [jshint web site](http://jshint.com/docs/options/).

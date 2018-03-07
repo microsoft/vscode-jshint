@@ -367,10 +367,17 @@ class Linter {
 		let index = fsPath.lastIndexOf('/');
 		return index > -1 ? fsPath.substr(index + 1) : fsPath;
 	}
+	
+	private trace(message: string, verbose?: string): void {
+		this.connection.tracer.log(message, verbose);
+	}
 
 	private onInitialize(params: InitializeParams): HandlerResult<InitializeResult, InitializeError> {
 		this.workspaceRoot = params.rootPath;
-		return Files.resolveModule(this.workspaceRoot, 'jshint').then((value) => {
+
+		const nodePath = params.initializationOptions && params.initializationOptions.nodePath;
+		
+		return Files.resolveModule2(this.workspaceRoot, 'jshint', nodePath, () => this.trace).then((value) => {
 			if (!value.JSHINT) {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false }) as any;
 			}

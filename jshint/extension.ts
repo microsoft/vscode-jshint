@@ -22,6 +22,12 @@ export function activate(context: ExtensionContext) {
 		synchronize: {
 			configurationSection: 'jshint',
 			fileEvents: workspace.createFileSystemWatcher('**/.jshint{rc,ignore}')
+		},
+		initializationOptions: () => {
+			const configuration = workspace.getConfiguration('jshint');
+			return {
+				nodePath: configuration && configuration.nodePath
+			}
 		}
 	}
 

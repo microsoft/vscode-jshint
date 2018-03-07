@@ -74,6 +74,11 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Lint JavaScript embedded in HTML"
+				},
+				"jshint.nodePath": {
+					"type": "string",
+					"default": "",
+					"description": "Configures the path to the jshint module. Can be an absolute path or relative to the current directory."
 				}
 			}
 		},
