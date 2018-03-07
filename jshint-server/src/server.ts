@@ -371,17 +371,39 @@ class Linter {
 	private trace(message: string, verbose?: string): void {
 		this.connection.tracer.log(message, verbose);
 	}
+	
+	private getGlobalPackageManagerPath(packageManager: string): string {
+		if (packageManager === "npm") {
+			return Files.resolveGlobalNodePath();
+		} else if (packageManager === "yarn") {
+			return Files.resolveGlobalYarnPath();
+		}
+	}
 
 	private onInitialize(params: InitializeParams): HandlerResult<InitializeResult, InitializeError> {
 		this.workspaceRoot = params.rootPath;
 
 		const nodePath = params.initializationOptions && params.initializationOptions.nodePath;
+		const packageManager = params.initializationOptions && params.initializationOptions.packageManager;
+		const globalPath = this.getGlobalPackageManagerPath(packageManager);
 		
-		return Files.resolveModule2(this.workspaceRoot, 'jshint', nodePath, () => this.trace).then((value) => {
-			if (!value.JSHINT) {
+		let libraryPathPromise: Thenable<string>;
+		if (nodePath) {
+			libraryPathPromise = Files.resolve('jshint', nodePath, nodePath, () => this.trace).then(undefined, () => {
+				return Files.resolve('jshint', globalPath, this.workspaceRoot, () => this.trace);
+			});
+		} else {
+			libraryPathPromise = Files.resolve('jshint', /* nodePath */ undefined, this.workspaceRoot, () => this.trace).then(undefined, () => {
+				return Files.resolve('jshint', globalPath, this.workspaceRoot, () => this.trace);
+			});
+		}
+		
+		return libraryPathPromise.then((path) => {
+			const lib = require(path);
+			if (!lib.JSHINT) {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false }) as any;
 			}
-			this.lib = value;
+			this.lib = lib;
 			return { capabilities: { textDocumentSync: this.documents.syncKind } };
 		}, (error) => {
 			return Promise.reject(

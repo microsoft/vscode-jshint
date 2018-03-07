@@ -26,7 +26,8 @@ export function activate(context: ExtensionContext) {
 		initializationOptions: () => {
 			const configuration = workspace.getConfiguration('jshint');
 			return {
-				nodePath: configuration && configuration.nodePath
+				nodePath: configuration && configuration.nodePath,
+				packageManager: configuration && configuration.packageManager
 			}
 		}
 	}
