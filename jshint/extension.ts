@@ -18,7 +18,21 @@ export function activate(context: ExtensionContext) {
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions}
 	};
 	let clientOptions: LanguageClientOptions = {
-		documentSelector: ['javascript', 'javascriptreact', 'html'],
+		// Only lint files on disk, which are those with 'file' scheme
+		documentSelector: [
+			{
+				language: 'javascript',
+				scheme: 'file'
+			},
+			{
+				language: 'javascriptreact',
+				scheme: 'file'
+			},
+			{
+				language: 'html',
+				scheme: 'file'
+			}
+		],
 		synchronize: {
 			configurationSection: 'jshint',
 			fileEvents: workspace.createFileSystemWatcher('**/.jshint{rc,ignore}')
