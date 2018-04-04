@@ -89,9 +89,27 @@
 					],
 					"default": "npm",
 					"description": "The package manager you use to install node modules."
+				},
+				"jshint.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the jshint linter service."
 				}
 			}
 		},
+		"commands": [
+			{
+				"title": "Show output",
+				"category": "JSHint",
+				"command": "jshint.showOutputChannel"
+			}
+		],
 		"jsonValidation": [
 			{
 				"fileMatch": "jshint.json",

@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { workspace, Disposable, ExtensionContext } from 'vscode';
+import { workspace, Disposable, ExtensionContext, commands } from 'vscode';
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, RequestType, TransportKind } from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
@@ -46,6 +46,9 @@ export function activate(context: ExtensionContext) {
 		}
 	}
 
-	let client = new LanguageClient('JSHint Linter', serverOptions, clientOptions);
-	context.subscriptions.push(new SettingMonitor(client, 'jshint.enable').start());
+	let client = new LanguageClient('jshint', serverOptions, clientOptions);
+	context.subscriptions.push(
+		new SettingMonitor(client, 'jshint.enable').start(),
+		commands.registerCommand('jshint.showOutputChannel', () => client.outputChannel.show())
+	);
 }

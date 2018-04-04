@@ -165,6 +165,7 @@ class OptionsResolver {
 		}
 
 		function readJSHintFile(file: string, extendedFrom?: string): any {
+			that.connection.console.info(extendedFrom ? `Reading jshint configuration from ${file}, which was extended from ${extendedFrom}` : `Reading jshint configuration from ${file}`);
 			let content = readJsonFile(file, extendedFrom);
 			if (content.extends) {
 				let baseFile = path.resolve(path.dirname(file), content.extends);
@@ -325,7 +326,6 @@ class Linter {
 		this.documents.onDidChangeContent(event => this.validateSingle(event.document));
 		this.documents.onDidClose((event) => {
 			this.connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
-			console.log('did sent');
 		});
 		this.documents.listen(this.connection);
 
@@ -404,6 +404,7 @@ class Linter {
 				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false }) as any;
 			}
 			this.lib = lib;
+			this.connection.console.info(`jshint library loaded from ${path}`);
 			return { capabilities: { textDocumentSync: this.documents.syncKind } };
 		}, (error) => {
 			return Promise.reject(
