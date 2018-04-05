@@ -182,6 +182,20 @@ class OptionsResolver {
 
 				delete content.extends;
 			}
+
+			if (content.overrides) {
+				Object.keys(content.overrides).forEach(pathPattern => {
+					if (minimatch(fsPath, pathPattern)) {
+						const optionsToOverride = content.overrides[pathPattern];
+						Object.keys(optionsToOverride).forEach(optionKey => {
+							content[optionKey] = optionsToOverride[optionKey];
+						});
+					}
+				});
+
+				delete content.overrides;
+			}
+
 			return content;
 		}
 
