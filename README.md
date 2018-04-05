@@ -8,6 +8,8 @@ The extension looks for a `jshint` module in the current directory and in the gl
 with `npm install -g jshint`. If your `jshint` module is in a different location, use the `jshint.nodePath` setting to specify the correct path. The `jshint.packageManager`
 setting can be used to specify which package manager you are using, `npm` or `yarn`.
 
+To check where `jshint` is loaded from, use the `JSHint: Show output` command after the extension has started to view the extension logs in the output panel.
+
 ## Configuration Options
 
 The jshint extension uses the standard jshint configuration options described on the [jshint web site](http://jshint.com/docs/options/).
