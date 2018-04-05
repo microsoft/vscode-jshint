@@ -220,6 +220,7 @@ class OptionsResolver {
 		let jshintOptions = this.jshintOptions;
 		// backward compatibility
 		if (jshintOptions && jshintOptions.config && fs.existsSync(jshintOptions.config)) {
+			this.connection.console.info(`Reading configuration from ${jshintOptions.config}`);
 			return readJsonFile(jshintOptions.config);
 		}
 
@@ -228,6 +229,7 @@ class OptionsResolver {
 			if (packageFile) {
 				let content = readJsonFile(packageFile);
 				if (content.jshintConfig) {
+					this.connection.console.info(`Reading configuration from ${packageFile}`);
 					return content.jshintConfig;
 				}
 			}
@@ -245,6 +247,9 @@ class OptionsResolver {
 				return readJSHintFile(file);
 			}
 		}
+
+		// No file found, using jshint.options setting
+		this.connection.console.info(`Reading configuration from 'jshint.options' setting`);
 		return jshintOptions;
 	}
 }
