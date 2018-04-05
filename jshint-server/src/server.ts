@@ -187,6 +187,12 @@ class OptionsResolver {
 				Object.keys(content.overrides).forEach(pathPattern => {
 					if (minimatch(fsPath, pathPattern)) {
 						const optionsToOverride = content.overrides[pathPattern];
+
+						if (optionsToOverride.globals) {
+							content.globals = _.extend(content.globals || {}, optionsToOverride.globals);
+							delete optionsToOverride.globals;
+						}
+
 						Object.keys(optionsToOverride).forEach(optionKey => {
 							content[optionKey] = optionsToOverride[optionKey];
 						});
