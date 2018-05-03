@@ -69,7 +69,11 @@
 							"description": "The ECMAScript version to which the code must adhere",
 							"type": "integer",
 							"default": 5,
-							"enum": [3, 5, 6]
+							"enum": [
+								3,
+								5,
+								6
+							]
 						},
 						"forin": {
 							"description": "Requires all `for in` loops to filter object's items with obj.hasOwnProperty()",
@@ -106,17 +110,27 @@
 						},
 						"latedef": {
 							"description": "Prohibits the use of a variable before it was defined",
-							"enum": [ true, false, "nofunc" ],
+							"enum": [
+								true,
+								false,
+								"nofunc"
+							],
 							"default": false
 						},
 						"maxcomplexity": {
 							"description": "Max cyclomatic complexity per function",
-							"type": ["boolean", "integer"],
+							"type": [
+								"boolean",
+								"integer"
+							],
 							"default": false
 						},
 						"maxdepth": {
 							"description": "Max depth of nested blocks",
-							"type": ["boolean", "integer"],
+							"type": [
+								"boolean",
+								"integer"
+							],
 							"default": false
 						},
 						"maxerr": {
@@ -126,11 +140,17 @@
 						},
 						"maxparams": {
 							"description": "Max number of formal parameters allowed per function",
-							"type": ["boolean", "integer"]
+							"type": [
+								"boolean",
+								"integer"
+							]
 						},
 						"maxstatements": {
 							"description": "Max number statements per function",
-							"type": ["boolean", "integer"],
+							"type": [
+								"boolean",
+								"integer"
+							],
 							"default": false
 						},
 						"noarg": {
@@ -160,9 +180,17 @@
 						},
 						"shadow": {
 							"description": "Suppresses warnings about variable shadowing. i.e. declaring a variable that had been already declared somewhere in the outer scope",
-							"type": ["boolean", "string"],
+							"type": [
+								"boolean",
+								"string"
+							],
 							"default": false,
-							"enum": [true, false, "inner", "outer"]
+							"enum": [
+								true,
+								false,
+								"inner",
+								"outer"
+							]
 						},
 						"singleGroups": {
 							"description": "Prohibits the use of the grouping operator when it is not strictly required.",
@@ -171,9 +199,18 @@
 						},
 						"strict": {
 							"description": "Requires all code to run in ES5 strict mode",
-							"type": ["boolean", "string"],
+							"type": [
+								"boolean",
+								"string"
+							],
 							"default": false,
-							"enum": [true, false, "implied", "global", "func"]
+							"enum": [
+								true,
+								false,
+								"implied",
+								"global",
+								"func"
+							]
 						},
 						"undef": {
 							"description": "Prohibits the use of explicitly undeclared variables",
@@ -182,16 +219,23 @@
 						},
 						"unused": {
 							"description": "Warns when you define and never use your variables",
-							"type": ["boolean", "string"],
+							"type": [
+								"boolean",
+								"string"
+							],
 							"default": false,
-							"enum": [true, false, "vars", "strict"]
+							"enum": [
+								true,
+								false,
+								"vars",
+								"strict"
+							]
 						},
 						"varstmt": {
 							"description": "Forbids the use of VariableStatements (`var`) in favor of `let` and `const`",
 							"type": "boolean",
 							"default": false
 						},
-
 						"asi": {
 							"description": "Suppresses warnings about missing semicolons",
 							"type": "boolean",
