@@ -1,4 +1,8 @@
 declare module 'parse-gitignore' {
-    function parseGitIgnore(path: string): string[];
+    interface parsingOptions {
+        cache?: boolean;
+    }
+
+    function parseGitIgnore(path: string, additionalPatterns?: string[], options?: parsingOptions): string[];
     export = parseGitIgnore;
 }

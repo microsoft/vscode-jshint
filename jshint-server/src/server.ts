@@ -315,11 +315,11 @@ class FileMatcher {
 			let shouldBeExcluded = false;
 
 			if (this.configPath && fs.existsSync(this.configPath)) {
-				shouldBeExcluded = this.match(processIgnoreFile(this.configPath), fsPath, root);
+				shouldBeExcluded = this.match(processIgnoreFile(this.configPath, [], { cache: false }), fsPath, root);
 			} else {
 				let ignoreFile = locateFile(fsPath, JSHINTIGNORE);
 				if (ignoreFile) {
-					shouldBeExcluded = this.match(processIgnoreFile(ignoreFile), fsPath, this.folderOf(ignoreFile));
+					shouldBeExcluded = this.match(processIgnoreFile(ignoreFile, [], { cache: false }), fsPath, this.folderOf(ignoreFile));
 				} else {
 					shouldBeExcluded = this.match(this.defaultExcludePatterns, fsPath, root);
 				}
