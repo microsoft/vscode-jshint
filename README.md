@@ -46,3 +46,7 @@ No files are excluded by default.
 ## Disable JSHint
 
 In order to disable jshint for a workspace specify `"jshint.enable" : false` in the workspace settings. jshint is enabled by default.
+
+### Contributing
+
+Contributions to the extension are welcome! Please see [contributing](https://github.com/Microsoft/vscode-jshint/blob/master/contributing.md) for information on how to develop the extension.

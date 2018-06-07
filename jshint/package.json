@@ -1,7 +1,7 @@
 {
 	"name": "jshint",
 	"description": "Integrates JSHint into VS Code. JSHint is a linter for JavaScript",
-	"version": "0.10.18",
+	"version": "0.10.19",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"repository": {
@@ -12,7 +12,7 @@
 		"url": "https://github.com/Microsoft/vscode-jshint/issues"
 	},
 	"engines": {
-		"vscode": "^1.19.0"
+		"vscode": "^1.23.0"
 	},
 	"scripts": {
 		"update-vscode": "node ./node_modules/vscode/bin/install",

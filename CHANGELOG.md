@@ -10,3 +10,7 @@
 - Add `JSHint: Show output` command that will open the output panel on the `jshint` output channel. Information about where the `jshint` library is loaded from and
 what file is being read for configuration options is shown here. If tracing is on, traces are displayed here as well.
 - Provide schema for `jshint.options` setting so that completions are given when typing.
+
+### 0.10.19
+- Update dependencies
+- Fix for [#22](https://github.com/Microsoft/vscode-jshint/issues/22) `.jshintignore` files incorrectly cached
