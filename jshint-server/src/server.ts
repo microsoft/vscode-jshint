@@ -20,7 +20,7 @@ import { HandlerResult } from 'vscode-jsonrpc';
 
 
 interface JSHintOptions {
-	config?: string
+	config?: string;
 	[key: string]: any;
 }
 
@@ -85,7 +85,7 @@ function locateFile(directory: string, fileName: string) {
 		parent = path.dirname(directory);
 	} while (parent !== directory);
 	return undefined;
-};
+}
 
 const JSHINTRC = '.jshintrc';
 class OptionsResolver {
@@ -151,7 +151,7 @@ class OptionsResolver {
 				}
 			});
 			return result;
-		};
+		}
 
 		function readJsonFile(file: string, extendedFrom?: string): any {
 			try {
@@ -303,7 +303,7 @@ class FileMatcher {
 		return _.some(excludePatters, (pattern) => {
 			return minimatch(relativePath, pattern);
 		});
-	};
+	}
 
 	public excludes(fsPath: string, root: string): boolean {
 		if (fsPath) {
@@ -480,8 +480,9 @@ class Linter {
 				}
 			},
 			ontext(data) {
-				if (!inscript)
-				  return;
+				if (!inscript) {
+					return;
+				}
 
 				// Collect JavaScript code
 				embeddedJS.push(data);
