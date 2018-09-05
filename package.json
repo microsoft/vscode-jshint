@@ -21,7 +21,7 @@
 	],
 	"publisher": "dbaeumer",
 	"engines": {
-		"vscode": "^1.19.0"
+		"vscode": "^1.26.0"
 	},
 	"activationEvents": [
 		"onLanguage:javascript",

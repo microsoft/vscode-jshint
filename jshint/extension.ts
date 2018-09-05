@@ -42,9 +42,9 @@ export function activate(context: ExtensionContext) {
 			return {
 				nodePath: configuration && configuration.nodePath,
 				packageManager: configuration && configuration.packageManager
-			}
+			};
 		}
-	}
+	};
 
 	let client = new LanguageClient('jshint', serverOptions, clientOptions);
 	context.subscriptions.push(
