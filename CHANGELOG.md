@@ -14,3 +14,6 @@ what file is being read for configuration options is shown here. If tracing is o
 ### 0.10.19
 - Update dependencies
 - Fix for [#22](https://github.com/Microsoft/vscode-jshint/issues/22) `.jshintignore` files incorrectly cached
+
+### 0.10.20
+- Update `vscode-languageserver` and `vscode-languageclient` versions
