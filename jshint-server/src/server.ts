@@ -18,7 +18,6 @@ import * as htmlparser from 'htmlparser2';
 import processIgnoreFile = require('parse-gitignore');
 import { HandlerResult } from 'vscode-jsonrpc';
 
-
 interface JSHintOptions {
 	config?: string;
 	[key: string]: any;
@@ -373,6 +372,10 @@ class Linter {
 							break;
 						case JSHINTIGNORE:
 							this.fileMatcher.clear();
+							needsValidating = true;
+							break;
+						case 'package.json':
+							this.options.clear();
 							needsValidating = true;
 							break;
 					}
