@@ -72,7 +72,10 @@
 							"enum": [
 								3,
 								5,
-								6
+								6,
+								7,
+								8,
+								9
 							]
 						},
 						"forin": {
@@ -95,14 +98,6 @@
 							"type": "boolean",
 							"default": false
 						},
-						"globals": {
-							"description": "Specify a white list of global variables that are not formally defined in the source code",
-							"type": "object",
-							"additionalProperties": {
-								"description": "Name of the global. Set to `true` for read/write, `false` for read-only.",
-								"type": "boolean"
-							}
-						},
 						"iterator": {
 							"description": "Suppresses warnings about the __iterator__ property.",
 							"type": "boolean",
@@ -115,6 +110,11 @@
 								false,
 								"nofunc"
 							],
+							"default": false
+						},
+						"leanswitch": {
+							"description": "Prohibits unnecessary clauses within `switch` statements",
+							"type": "boolean",
 							"default": false
 						},
 						"maxcomplexity": {
@@ -178,6 +178,16 @@
 							"type": "boolean",
 							"default": false
 						},
+						"noreturnawait": {
+							"description": "Async functions resolve on their return value. In most cases, this makes returning the result of an AwaitExpression (which is itself a Promise instance) unnecessary",
+							"type": "boolean",
+							"default": false
+						},
+						"regexpu": {
+							"description": "Enables warnings for regular rexpressions which do not include the 'u' flag",
+							"type": "boolean",
+							"default": false
+						},
 						"shadow": {
 							"description": "Suppresses warnings about variable shadowing. i.e. declaring a variable that had been already declared somewhere in the outer scope",
 							"type": [
@@ -211,6 +221,11 @@
 								"global",
 								"func"
 							]
+						},
+						"trailingcomma": {
+							"description": "Warns when a comma is not placed after the last element in an array or object literal",
+							"type": "boolean",
+							"default": false
 						},
 						"undef": {
 							"description": "Prohibits the use of explicitly undeclared variables",
@@ -420,6 +435,26 @@
 							"description": "[Environment] Yahoo User Interface",
 							"type": "boolean",
 							"default": false
+						},
+						"globals": {
+							"description": "Specify a white list of global variables that are not formally defined in the source code",
+							"type": "object",
+							"additionalProperties": {
+								"description": "Name of the global. Set to `true` for read/write, `false` for read-only.",
+								"type": "boolean"
+							}
+						},
+						"extends": {
+							"description": "Specify the path to another configuration file to use as a base, relative to the current file",
+							"type": "string"
+						},
+						"overrides": {
+							"description": "Specify the options that should only be applied to files matching a given path pattern",
+							"type": "object",
+							"additionalProperties": {
+								"description": "The path pattern to apply the given options to",
+								"type": "object"
+							}
 						}
 					},
 					"default": {},
