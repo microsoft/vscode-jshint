@@ -17,3 +17,8 @@ what file is being read for configuration options is shown here. If tracing is o
 
 ### 0.10.20
 - Update `vscode-languageserver` and `vscode-languageclient` versions
+
+### 0.10.21
+- Update lodoash dependency
+- Fix for [#74](https://github.com/Microsoft/vscode-jshint/issues/74), schema for `settings.json` out of data
+- Fix for [#68](https://github.com/Microsoft/vscode-jshint/issues/68), globals attribute in `package.json` not read after updating
