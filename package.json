@@ -530,7 +530,7 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "cd jshint && npm run update-vscode && cd .. && npm run compile",
+		"vscode:prepublish": "npm run compile",
 		"compile:client": "tsc -p jshint/tsconfig.json",
 		"compile:server": "tsc -p jshint-server/tsconfig.json",
 		"watch:client": "tsc -w -p jshint/tsconfig.json",
