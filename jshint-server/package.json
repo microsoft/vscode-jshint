@@ -15,7 +15,7 @@
 		"node": "*"
 	},
 	"dependencies": {
-		"lodash": "^4.17.15",
+		"lodash": "^4.17.19",
 		"minimatch": "^3.0.4",
 		"vscode-languageserver": "^5.0.3",
 		"parse-gitignore": "^0.4.0",
