@@ -5,7 +5,7 @@
 
 import {
 	createConnection, IConnection, ResponseError, InitializeParams, InitializeResult, InitializeError,
-	Diagnostic, DiagnosticSeverity, Files, TextDocuments, TextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
+	Diagnostic, DiagnosticSeverity, Files, TextDocuments, TextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter, RequestType
 } from 'vscode-languageserver';
 
 import fs = require('fs');
@@ -17,6 +17,19 @@ import * as htmlparser from 'htmlparser2';
 
 import processIgnoreFile = require('parse-gitignore');
 import { HandlerResult } from 'vscode-jsonrpc';
+
+interface LibraryUsageConfirmationParams {
+	isGlobal: boolean;
+	path: string;
+}
+export const libraryConfirmationType = new RequestType<LibraryUsageConfirmationParams, boolean, void, void>('jshint/confirmLibraryUsage');
+
+interface ErrorNotificationParams {
+	message: string;
+}
+
+export const errorNotificationType = new RequestType<ErrorNotificationParams, void, void, void>('jshint/errorNotification');
+
 
 interface JSHintOptions {
 	config?: string;
@@ -342,6 +355,10 @@ class Linter {
 	private workspaceRoot: string;
 	private lib: any;
 
+
+	private nodePath: string;
+	private packageManager: string;
+
 	constructor() {
 		this.connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 		this.options = new OptionsResolver(this.connection);
@@ -385,6 +402,9 @@ class Linter {
 				this.validateAll();
 			}
 		});
+		this.connection.onRequest('jshint/resetLibrary', () => {
+			this.lib = undefined;
+		});
 	}
 
 	public listen(): void {
@@ -411,13 +431,21 @@ class Linter {
 	private onInitialize(params: InitializeParams): HandlerResult<InitializeResult, InitializeError> {
 		this.workspaceRoot = params.rootPath;
 
-		const nodePath = params.initializationOptions && params.initializationOptions.nodePath;
-		const packageManager = params.initializationOptions && params.initializationOptions.packageManager;
-		const globalPath = this.getGlobalPackageManagerPath(packageManager);
+		this.nodePath = params.initializationOptions && params.initializationOptions.nodePath;
+		this.packageManager = params.initializationOptions && params.initializationOptions.packageManager; 
+		return Promise.resolve({ capabilities: { textDocumentSync: this.documents.syncKind } });
+	}
+
+	async getLib(): Promise<any> {
+		if (this.lib) {
+			return this.lib;
+		}
+
+		const globalPath = this.getGlobalPackageManagerPath(this.packageManager || 'yarn');
 		
-		let libraryPathPromise: Thenable<string>;
-		if (nodePath) {
-			libraryPathPromise = Files.resolve('jshint', nodePath, nodePath, () => this.trace).then(undefined, () => {
+		let libraryPathPromise;
+		if (this.nodePath) {
+			libraryPathPromise = Files.resolve('jshint', this.nodePath, this.nodePath, () => this.trace).then(undefined, () => {
 				return Files.resolve('jshint', globalPath, this.workspaceRoot, () => this.trace);
 			});
 		} else {
@@ -425,21 +453,33 @@ class Linter {
 				return Files.resolve('jshint', globalPath, this.workspaceRoot, () => this.trace);
 			});
 		}
-		
-		return libraryPathPromise.then((path) => {
+
+		try {
+			const path = await libraryPathPromise;
+			const confirmed = await this.confirmLibraryUsage(path, globalPath);
+			if (!confirmed) {
+				throw new Error('Library is not trused');
+			}
+
 			const lib = require(path);
 			if (!lib.JSHINT) {
-				return new ResponseError(99, 'The jshint library doesn\'t export a JSHINT property.', { retry: false }) as any;
+				const message = 'The jshint library doesn\'t export a JSHINT property.';
+				this.connection.console.error(message);
+				throw new Error(message);
 			}
-			this.lib = lib;
 			this.connection.console.info(`jshint library loaded from ${path}`);
-			return { capabilities: { textDocumentSync: this.documents.syncKind } };
-		}, (error) => {
-			return Promise.reject(
-				new ResponseError<InitializeError>(99,
-					'Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' or globally using \'npm install -g jshint\' and then press Retry.',
-					{ retry: true }));
-		});
+			this.lib = lib;
+			return this.lib;
+		} catch (e) {
+			this.connection.console.error('Failed to load jshint library');
+			throw new Error('Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' or globally using \'npm install -g jshint\' and then reload.');
+		}
+	}
+
+	private confirmLibraryUsage(libraryPath: string, globalPath: string): Thenable<boolean> {
+		this.trace('doing something');
+		const isGlobal = libraryPath.startsWith(globalPath);
+		return this.connection.sendRequest(libraryConfirmationType, { isGlobal, path: libraryPath });
 	}
 
 	private validateAll(): void {
@@ -463,8 +503,8 @@ class Linter {
 	}
 
 
-	private lintContent(content: string, fsPath: string): JSHintError[] {
-		let JSHINT: JSHINT = this.lib.JSHINT;
+	private async lintContent(content: string, fsPath: string): Promise<JSHintError[]> {
+		let JSHINT: JSHINT = (await this.getLib()).JSHINT;
 		let options = this.options.getOptions(fsPath) || {};
 		JSHINT(content, options, options.globals || {});
 		return JSHINT.errors;
@@ -506,7 +546,7 @@ class Linter {
 		return embeddedJS.join("");
 	}
 
-	private validate(document: TextDocument): void {
+	private async validate(document: TextDocument): Promise<void> {
 		if (!this.settings.lintHTML && document.languageId === "html") {
 			// If the setting is toggled, errors need to be cleared
 			this.connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
@@ -522,7 +562,7 @@ class Linter {
 
 		if (!this.fileMatcher.excludes(fsPath, this.workspaceRoot)) {
 			const content = document.languageId === "html" ? this.getEmbeddedJavascript(document.getText()) : document.getText();
-			let errors = this.lintContent(content, fsPath);
+			let errors = await this.lintContent(content, fsPath);
 			if (errors) {
 				errors.forEach((error) => {
 					// For some reason the errors array contains null.
