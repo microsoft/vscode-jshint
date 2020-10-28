@@ -415,11 +415,11 @@ class Linter {
 		let index = fsPath.lastIndexOf('/');
 		return index > -1 ? fsPath.substr(index + 1) : fsPath;
 	}
-	
+
 	private trace(message: string, verbose?: string): void {
 		this.connection.tracer.log(message, verbose);
 	}
-	
+
 	private getGlobalPackageManagerPath(packageManager: string): string {
 		if (packageManager === "npm") {
 			return Files.resolveGlobalNodePath();
@@ -432,7 +432,7 @@ class Linter {
 		this.workspaceRoot = params.rootPath;
 
 		this.nodePath = params.initializationOptions && params.initializationOptions.nodePath;
-		this.packageManager = params.initializationOptions && params.initializationOptions.packageManager; 
+		this.packageManager = params.initializationOptions && params.initializationOptions.packageManager;
 		return Promise.resolve({ capabilities: { textDocumentSync: this.documents.syncKind } });
 	}
 
@@ -442,7 +442,7 @@ class Linter {
 		}
 
 		const globalPath = this.getGlobalPackageManagerPath(this.packageManager || 'yarn');
-		
+
 		let libraryPathPromise;
 		if (this.nodePath) {
 			libraryPathPromise = Files.resolve('jshint', this.nodePath, this.nodePath, () => this.trace).then(undefined, () => {
@@ -454,26 +454,37 @@ class Linter {
 			});
 		}
 
+		let path;
 		try {
-			const path = await libraryPathPromise;
-			const confirmed = await this.confirmLibraryUsage(path, globalPath);
-			if (!confirmed) {
-				throw new Error('Library is not trused');
-			}
+			path = await libraryPathPromise;
+		} catch (e) {
+			this.connection.console.error('Failed to load jshint library');
+			throw new Error('Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' or globally using \'npm install -g jshint\' and then reload.');;
+		}
 
-			const lib = require(path);
-			if (!lib.JSHINT) {
-				const message = 'The jshint library doesn\'t export a JSHINT property.';
-				this.connection.console.error(message);
-				throw new Error(message);
-			}
-			this.connection.console.info(`jshint library loaded from ${path}`);
-			this.lib = lib;
-			return this.lib;
+		const confirmed = await this.confirmLibraryUsage(path, globalPath);
+		if (!confirmed) {
+			throw new Error('Library is not trusted');
+		}
+
+		let lib;
+		try {
+			lib = require(path);
 		} catch (e) {
 			this.connection.console.error('Failed to load jshint library');
 			throw new Error('Failed to load jshint library. Please install jshint in your workspace folder using \'npm install jshint\' or globally using \'npm install -g jshint\' and then reload.');
 		}
+
+		if (!lib.JSHINT) {
+			const message = 'The jshint library doesn\'t export a JSHINT property.';
+			this.connection.console.error(message);
+			throw new Error(message);
+		}
+
+		this.connection.console.info(`jshint library loaded from ${path}`);
+		this.lib = lib;
+		return this.lib;
+
 	}
 
 	private confirmLibraryUsage(libraryPath: string, globalPath: string): Thenable<boolean> {
@@ -595,7 +606,7 @@ class Linter {
 			}
 		};
 	}
-	
+
 	private getSeverity(problem: JSHintError): DiagnosticSeverity {
 		// If there is no code (that would be very odd) we'll push it as an error as well.
 		// See http://jshint.com/docs/ (search for error. It is only mentioned once.)
