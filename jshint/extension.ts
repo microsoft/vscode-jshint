@@ -111,8 +111,8 @@ export async function activate(context: ExtensionContext) {
 			message = `The jshint extension will use '${relativePath}' for validation, which is installed locally in '${folder.name}'. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`;
 		} else {
 			message = params.isGlobal
-				? `The jshint extension will use a globally installed jshint library for validation. Do you allow this?`
-				: `The jshint extension will use a locally installed jshint library for validation. Do you allow this?`;
+				? `The jshint extension will use a globally installed jshint library for validation. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`
+				: `The jshint extension will use a locally installed jshint library for validation. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`;
 		}
 
 		const item = await window.showInformationMessage(message, { modal: true }, { title: 'Allow', value: true }, { title: 'Do Not Allow', value: false });
