@@ -1,3 +1,6 @@
+### 0.11.0 
+- Security fixes
+
 ### 0.10.17
 
 - Add support for configuring the location of `jshint` with the `jshint.nodePath` setting. This can be an absolute or relative path.
