@@ -15,6 +15,13 @@ interface LibraryUsageConfirmationParams {
 export const libraryConfirmationType = new RequestType<LibraryUsageConfirmationParams, boolean, void, void>('jshint/confirmLibraryUsage');
 
 const JSHINT_LIBRARY_CONFIRMATION_KEY = 'jshint/libraryConfirmations';
+const JSHINT_ALWAYS_ALLOW_EXECUTION_KEY = 'jshint/alwaysAllowExecution';
+
+enum ConfirmationSelection {
+	deny = 1,
+	allow = 2,
+	alwaysAllow = 3
+}
 
 export async function activate(context: ExtensionContext) {
 
@@ -78,6 +85,8 @@ export async function activate(context: ExtensionContext) {
 			}
 		}
 
+		context.globalState.update(JSHINT_ALWAYS_ALLOW_EXECUTION_KEY, false);
+		alwaysAllowExecution = false;
 		client.sendRequest('jshint/resetLibrary')
 	}));
 
@@ -88,10 +97,15 @@ export async function activate(context: ExtensionContext) {
 	);
 
 	const libraryConfirmations = context.globalState.get<{ [key: string]: boolean }>(JSHINT_LIBRARY_CONFIRMATION_KEY, {});
+	let alwaysAllowExecution = context.globalState.get(JSHINT_ALWAYS_ALLOW_EXECUTION_KEY, false);
 	let sessionPath: string | undefined;
 
 	await client.onReady();
 	client.onRequest(libraryConfirmationType, async params => {
+		if (alwaysAllowExecution) {
+			return true;
+		}
+
 		sessionPath = params.path;
 		const existingConfirmation = libraryConfirmations[params.path];
 		if (existingConfirmation !== undefined) {
@@ -108,20 +122,37 @@ export async function activate(context: ExtensionContext) {
 			if (relativePath.endsWith(mainPath)) {
 				relativePath = relativePath.substr(0, relativePath.length - mainPath.length);
 			}
-			message = `The jshint extension will use '${relativePath}' for validation, which is installed locally in '${folder.name}'. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`;
+			message = `The jshint extension will use '${relativePath}' for validation, which is installed locally in '${folder.name}'. Do you allow the execution of this JSHint version including all plugins and configuration files it will load on your behalf?\n\nPress 'Allow Everywhere' to remember the choice for all workspaces. Use 'Cancel' to disable JSHint for this session.`;
 		} else {
 			message = params.isGlobal
-				? `The jshint extension will use a globally installed jshint library for validation. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`
-				: `The jshint extension will use a locally installed jshint library for validation. If you trust this version of jshint including all plugins and configuration files it will load, choose 'Allow', otherwise choose 'Do Not Allow'. Choose 'Cancel' to disable jshint for this session.`;
+				? `The jshint extension will use a globally installed jshint library for validation. Do you allow the execution of this JSHint version including all plugins and configuration files it will load on your behalf?\n\nPress 'Allow Everywhere' to remember the choice for all workspaces. Use 'Cancel' to disable JSHint for this session.`
+				: `The jshint extension will use a locally installed jshint library for validation. Do you allow the execution of this JSHint version including all plugins and configuration files it will load on your behalf?\n\nPress 'Allow Everywhere' to remember the choice for all workspaces. Use 'Cancel' to disable JSHint for this session.`;
 		}
 
-		const item = await window.showInformationMessage(message, { modal: true }, { title: 'Allow', value: true }, { title: 'Do Not Allow', value: false });
+		const item = await window.showInformationMessage(message, { modal: true },
+			{ title: 'Allow Everywhere', value: ConfirmationSelection.alwaysAllow },
+			{ title: 'Allow', value: ConfirmationSelection.allow },
+			{ title: 'Deny', value: ConfirmationSelection.deny },
+		);
+
 		if (item === undefined) {
 			return false;
 		} else {
-			libraryConfirmations[params.path] = item.value;
-			context.globalState.update(JSHINT_LIBRARY_CONFIRMATION_KEY, libraryConfirmations);
-			return item.value;
+			switch (item.value) {
+				case ConfirmationSelection.alwaysAllow:
+					context.globalState.update(JSHINT_ALWAYS_ALLOW_EXECUTION_KEY, true);
+					return true;
+
+				case ConfirmationSelection.allow:
+					libraryConfirmations[params.path] = true;
+					context.globalState.update(JSHINT_LIBRARY_CONFIRMATION_KEY, libraryConfirmations);
+					return true;
+				
+				case ConfirmationSelection.deny:
+					libraryConfirmations[params.path] = false;
+					context.globalState.update(JSHINT_LIBRARY_CONFIRMATION_KEY, libraryConfirmations);
+					return false;
+			}
 		}
 	});
 }
