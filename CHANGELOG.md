@@ -1,5 +1,5 @@
 ### 0.11.0 
-- Security fixes
+- Security fix for https://msrc.microsoft.com/update-guide/vulnerability/CVE-2020-17104, released Nov 10, 2020.
 
 ### 0.10.17
 
