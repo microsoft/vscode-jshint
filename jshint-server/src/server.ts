@@ -48,6 +48,7 @@ interface JSHintSettings {
 	exclude: FileSettings;
 	reportWarningsAsErrors: boolean;
 	lintHTML: boolean;
+	lintExt: array;
 }
 
 interface Settings {
@@ -558,7 +559,8 @@ class Linter {
 	}
 
 	private async validate(document: TextDocument): Promise<void> {
-		if (!this.settings.lintHTML && document.languageId === "html") {
+		let exts = this.settings.lintExt;
+		if (!this.settings.lintHTML && exts.includes(document.languageId) {
 			// If the setting is toggled, errors need to be cleared
 			this.connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
 			return;
@@ -572,7 +574,7 @@ class Linter {
 		let diagnostics: Diagnostic[] = [];
 
 		if (!this.fileMatcher.excludes(fsPath, this.workspaceRoot)) {
-			const content = document.languageId === "html" ? this.getEmbeddedJavascript(document.getText()) : document.getText();
+			const content = exts.includes(document.languageId) ? this.getEmbeddedJavascript(document.getText()) : document.getText();
 			let errors = await this.lintContent(content, fsPath);
 			if (errors) {
 				errors.forEach((error) => {

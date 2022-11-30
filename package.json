@@ -485,6 +485,11 @@
 					"default": false,
 					"description": "Lint JavaScript embedded in HTML"
 				},
+				"jshint.lintExt": {
+					"type": "array",
+					"default": ["html"],
+					"description": "When lintHTML is enabled, lint these file types"
+				},
 				"jshint.nodePath": {
 					"scope": "resource",
 					"type": "string",
