@@ -515,7 +515,7 @@ class Linter {
 
 
 	private async lintContent(content: string, fsPath: string): Promise<JSHintError[]> {
-		let JSHINT: JSHINT = (await this.getLib()).JSHINT;
+		let JSHINT: JSHINT = (await this.getLib().catch((err) => { return () => ({}) })).JSHINT;
 		let options = this.options.getOptions(fsPath) || {};
 		JSHINT(content, options, options.globals || {});
 		return JSHINT.errors;
